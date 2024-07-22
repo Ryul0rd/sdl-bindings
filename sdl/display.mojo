@@ -106,13 +106,16 @@ struct Surface:
         if error_code != 0:
             raise Error('Could not blit surface')
 
+    fn convert(inout self, format: Surface):
+        self._c_surface_ptr = convert_surface(self._c_surface_ptr, format._c_surface_ptr[].format, 0)
+
 
 struct C_Window:
     pass
 
 struct C_Surface:
-    var flags: UInt32 # SurfaceFlags
-    var format: UnsafePointer[PixelFormat]
+    var flags: UInt32
+    var format: UnsafePointer[C_PixelFormat]
     var width: Int32
     var height: Int32
     var pitch: Int32
@@ -124,7 +127,28 @@ struct C_Surface:
     var map: UnsafePointer[UInt8]
     var refcount: Int32
 
-struct PixelFormat:
+struct C_PixelFormat:
+    var format: UInt32
+    var palette: UnsafePointer[C_Palette]
+    var bits_per_pixel: UInt8
+    var bytes_per_pixel: UInt8
+    var padding: UInt16
+    var rmask: UInt32
+    var gmask: UInt32
+    var bmask: UInt32
+    var amask: UInt32
+    var rloss: UInt8
+    var gloss: UInt8
+    var bloss: UInt8
+    var aloss: UInt8
+    var rshift: UInt8
+    var gshift: UInt8
+    var bshift: UInt8
+    var ashift: UInt8
+    var refcount: Int32
+    var next: UnsafePointer[C_PixelFormat]
+
+struct C_Palette:
     pass
 
 @value
@@ -136,9 +160,9 @@ struct Rect:
 
 @value
 struct Color:
-    var b: UInt8
-    var g: UInt8
     var r: UInt8
+    var g: UInt8
+    var b: UInt8
     var a: UInt8
 
     fn __init__(inout self, r: UInt8, g: UInt8, b: UInt8, a: UInt8=0):
@@ -148,7 +172,7 @@ struct Color:
         self.a = a
 
     fn as_uint32(owned self) -> UInt32:
-        return UnsafePointer(self).bitcast[UInt32]()[]
+        return UnsafePointer(Color(self.b, self.g, self.r, self.a)).bitcast[UInt32]()[]
 
 var _create_window = sdl.get_function[fn(UnsafePointer[UInt8], Int32, Int32, Int32, Int32, UInt32) -> UnsafePointer[C_Window]]('SDL_CreateWindow')
 fn create_window(name: String, xpos: Int32, ypos: Int32, width: Int32, height: Int32, flags: UInt32) -> UnsafePointer[C_Window]:
@@ -184,6 +208,12 @@ fn create_rgb_surface(
 var _free_surface = sdl.get_function[fn(UnsafePointer[C_Surface]) -> None]('SDL_FreeSurface')
 fn free_surface(surface: UnsafePointer[C_Surface]):
     _free_surface(surface)
+
+var _convert_surface = sdl.get_function[
+    fn(UnsafePointer[C_Surface], UnsafePointer[C_PixelFormat], UInt32) -> UnsafePointer[C_Surface]
+]('SDL_ConvertSurface')
+fn convert_surface(source: UnsafePointer[C_Surface], format: UnsafePointer[C_PixelFormat], flags: UInt32) -> UnsafePointer[C_Surface]:
+    return _convert_surface(source, format, flags) 
 
 var _fill_rect = sdl.get_function[fn(UnsafePointer[C_Surface], UnsafePointer[Rect], UInt32) -> Int32]('SDL_FillRect')
 fn fill_rect(surface: UnsafePointer[C_Surface], rect: UnsafePointer[Rect], color: UInt32) -> Int32:
