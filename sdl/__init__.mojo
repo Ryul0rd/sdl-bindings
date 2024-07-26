@@ -1,9 +1,15 @@
-from .misc import init, quit, get_error
-from .image import img_init, img_quit, load_image
-from .display import Window, Surface, Rect, Color, blit_scaled, create_rgb_surface
-from .graphics import rotozoom_surface
-from .font import ttf_init, ttf_quit, Font
-from .events import event_list, QuitEvent, WindowEvent, KeyDownEvent, KeyUpEvent, MouseMotionEvent, MouseButtonEvent
-import .keys
-from .keys import get_keyboard_state
-from .time import Clock
+"""sdl-bindings."""
+from .display import *
+from .events import *
+from .font import *
+from .graphics import *
+from .image import *
+from .misc import *
+from .time import *
+
+
+from sys import ffi as _ffi
+var _sdl = _ffi.DLHandle('/lib/x86_64-linux-gnu/libSDL2-2.0.so')
+var _sdl_gfx = _ffi.DLHandle('/lib/x86_64-linux-gnu/libSDL2_gfx-1.0.so.0')
+var _sdl_img = _ffi.DLHandle('/lib/x86_64-linux-gnu/libSDL2_image-2.0.so.0')
+var _sdl_ttf = _ffi.DLHandle('/lib/x86_64-linux-gnu/libSDL2_ttf-2.0.so.0')

@@ -1,10 +1,3 @@
-from sys import ffi
-
-
-var path = '/lib/x86_64-linux-gnu/libSDL2-2.0.so'
-var sdl = ffi.DLHandle(path)
-
-
 alias C_Char = UInt8
 
 
@@ -44,7 +37,7 @@ struct C_Event:
         self.data2 = 0
 
     fn to_nonc(owned self) -> Event:
-        var ptr = UnsafePointer(self)
+        var ptr = UnsafePointer.address_of(self)
         if self.type == QUIT:
             return ptr.bitcast[QuitEvent]()[]
         elif self.type == WINDOWEVENT:
@@ -171,7 +164,7 @@ struct MouseButtonEvent:
 
 fn event_list() -> List[Event]:
     var l = List[Event]()
-    var event_ptr = UnsafePointer(C_Event())
+    var event_ptr = UnsafePointer.address_of(C_Event())
     while poll_event(event_ptr) != 0:
         l.append(event_ptr[].to_nonc())
     return l
@@ -186,10 +179,9 @@ fn event_list() -> List[Event]:
 # struct C_GETEVENT: pass
 
 
-var _poll_event = sdl.get_function[fn(UnsafePointer[C_Event]) -> Int32]('SDL_PollEvent')
+var _poll_event = _sdl.get_function[fn(UnsafePointer[C_Event]) -> Int32]('SDL_PollEvent')
 fn poll_event(event: UnsafePointer[C_Event]) -> Int32:
     return _poll_event(event)
 
 # var _peep_events = sdl.get_function[fn(UnsafePointer[C_Event], Int32, UInt8, UInt32, UInt32) -> Int32]('SDL_PeepEvents')
 # fn peep_events(events: UnsafePointer[C_Event], numevents: Int32, action: C_EventAction, min_type: Int32, max_type: Int32) -> Int32:
-    

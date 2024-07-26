@@ -1,3 +1,2 @@
-assets/
-*.png
-*.ttf
+**/temp.**
+**/temp/

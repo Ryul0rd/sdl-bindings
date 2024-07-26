@@ -1,12 +1,5 @@
-from sys import ffi
-
-
-var path = '/lib/x86_64-linux-gnu/libSDL2-2.0.so'
-var sdl = ffi.DLHandle(path)
-
-
-var _init = sdl.get_function[fn(flags: UInt32) -> Int32]('SDL_Init')
-fn init(
+var _init = _sdl.get_function[fn(flags: UInt32) -> Int32]('SDL_Init')
+fn sdl_init(
     timer: Bool = False,
     audio: Bool = False,
     video: Bool = False,
@@ -31,11 +24,11 @@ fn init(
         raise Error('Could not initialize SDL')
 
 
-var _quit = sdl.get_function[fn() -> None]('SDL_Quit')
-fn quit():
+var _quit = _sdl.get_function[fn() -> None]('SDL_Quit')
+fn sdl_quit():
     _quit()
 
-var _get_error = sdl.get_function[fn() -> UnsafePointer[UInt8]]('SDL_GetError')
+var _get_error = _sdl.get_function[fn() -> UnsafePointer[UInt8]]('SDL_GetError')
 fn get_error() -> String:
     var error_ptr = _get_error()
     return String(c_str_copy(error_ptr))
@@ -47,5 +40,5 @@ fn c_str_copy(source: UnsafePointer[UInt8]) -> UnsafePointer[UInt8]:
     var length = i + 1
     var new_ptr = UnsafePointer[UInt8].alloc(length)
     for i in range(length):
-        new_ptr[i] = source
+        new_ptr[i] = source[]
     return new_ptr
