@@ -1,5 +1,5 @@
 """sdl-bindings."""
-from .display import Window, Surface, Color
+from .display import Window, Surface, Color, Rect
 from .events import
     event_list,
     QuitEvent,
