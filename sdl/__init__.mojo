@@ -1,11 +1,22 @@
 """sdl-bindings."""
-from .display import *
-from .events import *
-from .font import *
-from .graphics import *
-from .image import *
-from .misc import *
-from .time import *
+from .display import Window, Surface, Color
+from .events import
+    event_list,
+    QuitEvent,
+    WindowEvent,
+    KeyDownEvent,
+    KeyUpEvent,
+    TextEditingEvent,
+    TextInputEvent,
+    KeyMapChangedEvent,
+    MouseMotionEvent,
+    MouseButtonEvent
+from .font import ttf_init, ttf_quit, Font
+from .graphics import rotozoom_surface
+from .image import img_init, img_quit, load_image
+from .misc import sdl_init, sdl_quit
+from .time import Clock
+import .keys
 
 
 from sys import ffi as _ffi

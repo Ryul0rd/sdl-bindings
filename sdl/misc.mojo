@@ -40,5 +40,5 @@ fn c_str_copy(source: UnsafePointer[UInt8]) -> UnsafePointer[UInt8]:
     var length = i + 1
     var new_ptr = UnsafePointer[UInt8].alloc(length)
     for i in range(length):
-        new_ptr[i] = source[]
+        new_ptr[i] = source[i]
     return new_ptr

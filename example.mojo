@@ -1,4 +1,5 @@
 import sdl
+from sdl import keys
 
 # TODO: collision rect/point
 # TODO: mouse stuff? (getting mouse position and click events)
@@ -18,9 +19,9 @@ fn main() raises:
 
     var apple = sdl.load_image('assets/apple.png')
     var rotated_apple = sdl.rotozoom_surface(apple, 90, 1, True)
-    # var font = sdl.Font("assets/Beef'd.ttf", 24)
-    # var hello = font.render_solid('Hello, World!', sdl.Color(255, 0, 255, 255))
-    # hello.convert(window.surface)
+    var font = sdl.Font("assets/Beef'd.ttf", 24)
+    var hello = font.render_solid('Hello, World!', sdl.Color(255, 0, 255, 255))
+    hello.convert(window.surface)
 
     var player_color = sdl.Color(255, 0, 0, 255)
     var background_color = sdl.Color(255, 255, 255, 255)
@@ -39,13 +40,13 @@ fn main() raises:
                 var e = event[][sdl.KeyUpEvent]
                 held_keys[int(e.key)] = False
 
-        if held_keys[sdl.keys.w]:
+        if held_keys[keys.w]:
             player_box.y -= int(player_speed * clock.delta_time)
-        if held_keys[sdl.keys.a]:
+        if held_keys[keys.a]:
             player_box.x -= int(player_speed * clock.delta_time)
-        if held_keys[sdl.keys.s]:
+        if held_keys[keys.s]:
             player_box.y += int(player_speed * clock.delta_time)
-        if held_keys[sdl.keys.d]:
+        if held_keys[keys.d]:
             player_box.x += int(player_speed * clock.delta_time)
 
         window.surface.fill(background_color)
@@ -54,7 +55,7 @@ fn main() raises:
         var green = sdl.Surface(100, 100, sdl.Color(0, 255, 0))
         window.surface.blit(green, None, sdl.Rect(200, 200, 30, 30))
         window.surface.blit(rotated_apple, None, sdl.Rect(300, 300, 30, 30))
-        # window.surface.blit(hello, None, sdl.Rect(300, 300, 300, 44))
+        window.surface.blit(hello, None, sdl.Rect(300, 300, 300, 44))
 
         window.update_surface()
         clock.tick()
