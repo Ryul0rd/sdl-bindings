@@ -1,3 +1,6 @@
+from .display import C_Surface
+
+
 var _rotozoom_surface = _sdl_gfx.get_function[
     fn(UnsafePointer[C_Surface], Float64, Float64, Int32) -> UnsafePointer[C_Surface]
 ]('rotozoomSurface')

@@ -1,5 +1,7 @@
-var _img_init = _sdl_img.get_function[fn(Int32) -> Int32]('IMG_Init')
+from .display import C_Surface
 
+
+var _img_init = _sdl_img.get_function[fn(Int32) -> Int32]('IMG_Init')
 fn img_init(jpeg: Bool=False, png: Bool=False, tif: Bool=False, webp: Bool=False):
     var flags: Int32 = 0
     flags |= 0x00000001 * jpeg

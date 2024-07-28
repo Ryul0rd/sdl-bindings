@@ -1,3 +1,6 @@
+from .display import C_Surface
+
+
 struct Font:
     var _font_ptr: UnsafePointer[C_Font]
 
