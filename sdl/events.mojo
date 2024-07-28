@@ -15,11 +15,15 @@ alias KEYMAPCHANGED = 0x304
 alias MOUSEMOTION = 0x400
 alias MOUSEBUTTONDOWN = 0x401
 alias MOUSEBUTTONUP = 0x402
+# Audio Device Events
+alias AUDIODEVICEADDED = 0x1100
+alias AUDIODEVICEREMOVED = 0x1101
 
 alias Event = Variant[
     QuitEvent, WindowEvent,
     KeyDownEvent, KeyUpEvent, TextEditingEvent, TextInputEvent, KeyMapChangedEvent,
-    MouseMotionEvent, MouseButtonEvent
+    MouseMotionEvent, MouseButtonEvent,
+    AudioDeviceEvent,
 ]
 
 @value
@@ -56,6 +60,8 @@ struct C_Event:
             return ptr.bitcast[MouseMotionEvent]()[]
         elif self.type == MOUSEBUTTONDOWN or self.type == MOUSEBUTTONUP:
             return ptr.bitcast[MouseButtonEvent]()[]
+        elif self.type == AUDIODEVICEADDED or self.type == AUDIODEVICEREMOVED:
+            return ptr.bitcast[AudioDeviceEvent]()[]
         else:
             print('Unhandled event type: ' + String(self.type))
             return ptr.bitcast[QuitEvent]()[]
@@ -160,6 +166,13 @@ struct MouseButtonEvent:
     var _padding1: UInt8
     var x: Int32
     var y: Int32
+
+@value
+struct AudioDeviceEvent:
+    var type: UInt32
+    var timestamp: UInt32
+    var which: UInt32
+    var iscapture: UInt8
 
 
 fn event_list() -> List[Event]:

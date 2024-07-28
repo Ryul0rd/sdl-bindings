@@ -10,7 +10,7 @@ fn main() raises:
     alias screen_width = 640
     alias screen_height = 480
 
-    sdl.sdl_init(video=True, timer=True, events=True)
+    sdl.sdl_init(video=True, audio=True, timer=True, events=True)
     sdl.img_init(png=True)
     sdl.ttf_init()
     var window = sdl.Window('SDL Test', screen_width, screen_height)
