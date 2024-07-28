@@ -1,3 +1,6 @@
+from .graphics import rotozoom_surface
+
+
 # window pos
 alias windowpos_undefined_mask = 0x1FFF0000
 alias windowpos_centered_mask = 0x2FFF0000
@@ -97,6 +100,9 @@ struct Surface:
         var error_code = blit_scaled(source._c_surface_ptr, source_rect_ptr, self._c_surface_ptr, destination_rect_ptr)
         if error_code != 0:
             raise Error('Could not blit surface')
+
+    fn rotozoomed(self, angle: Float64, zoom: Float64, smooth: Bool=False) -> Surface:
+        return rotozoom_surface(self, angle, zoom, smooth)
 
     fn convert(inout self, format: Surface):
         self._c_surface_ptr = convert_surface(self._c_surface_ptr, format._c_surface_ptr[].format, 0)
