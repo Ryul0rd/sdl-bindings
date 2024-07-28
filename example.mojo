@@ -3,7 +3,6 @@ from sdl import keys
 
 # TODO: collision rect/point
 # TODO: mouse stuff? (getting mouse position and click events)
-# TODO: Sound
 
 
 fn main() raises:
@@ -12,6 +11,7 @@ fn main() raises:
 
     sdl.sdl_init(video=True, audio=True, timer=True, events=True)
     sdl.img_init(png=True)
+    sdl.open_audio(44100, sdl.AUDIO_S16LSB, 2, 2048)
     sdl.ttf_init()
     var window = sdl.Window('SDL Test', screen_width, screen_height)
     var clock = sdl.Clock(target_fps=60)
@@ -22,6 +22,8 @@ fn main() raises:
     var font = sdl.Font("assets/Beef'd.ttf", 24)
     var hello = font.render_solid('Hello, World!', sdl.Color(255, 0, 255, 255))
     hello.convert(window.surface)
+
+    var test_sound = sdl.load_music('assets/Audio/error_003.ogg')
 
     var player_color = sdl.Color(255, 0, 0, 255)
     var background_color = sdl.Color(255, 255, 255, 255)
@@ -36,6 +38,8 @@ fn main() raises:
             elif event[].isa[sdl.KeyDownEvent]():
                 var e = event[][sdl.KeyDownEvent]
                 held_keys[int(e.key)] = True
+                if e.key == keys.space:
+                    test_sound.play(1)
             elif event[].isa[sdl.KeyUpEvent]():
                 var e = event[][sdl.KeyUpEvent]
                 held_keys[int(e.key)] = False
@@ -61,4 +65,5 @@ fn main() raises:
         clock.tick()
     sdl.sdl_quit()
     sdl.img_quit()
+    sdl.close_audio()
     sdl.ttf_quit()
