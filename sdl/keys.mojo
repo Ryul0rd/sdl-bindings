@@ -1,17 +1,10 @@
-from sys import ffi
-
-
-var path = '/lib/x86_64-linux-gnu/libSDL2-2.0.so'
-var sdl = ffi.DLHandle(path)
-
-
-var _get_keyboard_state = sdl.get_function[fn(UnsafePointer[Int32]) -> UnsafePointer[UInt8]]('SDL_GetKeyboardState')
+var _get_keyboard_state = _sdl.get_function[fn(UnsafePointer[Int32]) -> UnsafePointer[UInt8]]('SDL_GetKeyboardState')
 fn get_keyboard_state() -> List[Bool]:
-    var len_ptr = UnsafePointer(Int32())
+    var len_ptr = UnsafePointer.address_of(Int32())
     var keys_ptr = _get_keyboard_state(len_ptr)
     var keys_list = List[Bool](capacity=int(len_ptr[]))
     for i in range(len_ptr[]):
-        keys_list.append(keys_ptr[i])
+        keys_list.append(bool(keys_ptr[i]))
     return keys_list
 
 

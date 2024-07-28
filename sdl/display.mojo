@@ -1,11 +1,3 @@
-from sys import ffi
-from bit import rotate_bits_left
-
-
-var path = '/lib/x86_64-linux-gnu/libSDL2-2.0.so'
-var sdl = ffi.DLHandle(path)
-
-
 # window pos
 alias windowpos_undefined_mask = 0x1FFF0000
 alias windowpos_centered_mask = 0x2FFF0000
@@ -49,8 +41,8 @@ struct Window:
             raise Error('Expected only one of `xpos` or `xcenter` but got both')
         if ypos and ycenter:
             raise Error('Expected only one of `ypos` or `ycenter` but got both')
-        var x = xpos.value()[] if xpos else WINDOWPOS_CENTERED if xcenter else WINDOWPOS_UNDEFINED
-        var y = ypos.value()[] if ypos else WINDOWPOS_CENTERED if ycenter else WINDOWPOS_UNDEFINED
+        var x = xpos.unsafe_value() if xpos else WINDOWPOS_CENTERED if xcenter else WINDOWPOS_UNDEFINED
+        var y = ypos.unsafe_value() if ypos else WINDOWPOS_CENTERED if ycenter else WINDOWPOS_UNDEFINED
         var flags: UInt32 = 0
         flags |= 0x00000001 * fullscreen
         flags |= 0x00000002 * opengl
@@ -83,7 +75,7 @@ struct Surface:
         self._c_surface_ptr = create_rgb_surface(0, width, height, 32, 0, 0, 0, 0)
         if color:
             try:
-                self.fill(color.value()[])
+                self.fill(color.unsafe_value())
             except:
                 pass
 
@@ -94,14 +86,14 @@ struct Surface:
         free_surface(self._c_surface_ptr)
 
     fn fill(self, color: Color, rect: Optional[Rect]=None) raises:
-        var r = UnsafePointer(rect.value()[]) if rect else UnsafePointer[Rect]()
+        var r = UnsafePointer.address_of(rect.unsafe_value()) if rect else UnsafePointer[Rect]()
         var error_code = fill_rect(self._c_surface_ptr, r, color.as_uint32())
         if error_code != 0:
             raise Error('Could not fill rect')
 
     fn blit(self, source: Surface, source_rect: Optional[Rect], destination_rect: Optional[Rect]) raises:
-        var source_rect_ptr = UnsafePointer(source_rect.value()[]) if source_rect else UnsafePointer[Rect]()
-        var destination_rect_ptr = UnsafePointer(destination_rect.value()[]) if destination_rect else UnsafePointer[Rect]()
+        var source_rect_ptr = UnsafePointer.address_of(source_rect.unsafe_value()) if source_rect else UnsafePointer[Rect]()
+        var destination_rect_ptr = UnsafePointer.address_of(destination_rect.unsafe_value()) if destination_rect else UnsafePointer[Rect]()
         var error_code = blit_scaled(source._c_surface_ptr, source_rect_ptr, self._c_surface_ptr, destination_rect_ptr)
         if error_code != 0:
             raise Error('Could not blit surface')
@@ -172,25 +164,25 @@ struct Color:
         self.a = a
 
     fn as_uint32(owned self) -> UInt32:
-        return UnsafePointer(Color(self.b, self.g, self.r, self.a)).bitcast[UInt32]()[]
+        return UnsafePointer.address_of(Color(self.b, self.g, self.r, self.a)).bitcast[UInt32]()[]
 
-var _create_window = sdl.get_function[fn(UnsafePointer[UInt8], Int32, Int32, Int32, Int32, UInt32) -> UnsafePointer[C_Window]]('SDL_CreateWindow')
+var _create_window = _sdl.get_function[fn(UnsafePointer[UInt8], Int32, Int32, Int32, Int32, UInt32) -> UnsafePointer[C_Window]]('SDL_CreateWindow')
 fn create_window(name: String, xpos: Int32, ypos: Int32, width: Int32, height: Int32, flags: UInt32) -> UnsafePointer[C_Window]:
-    return _create_window(name.unsafe_uint8_ptr(), xpos, ypos, width, height, flags)
+    return _create_window(name.unsafe_ptr(), xpos, ypos, width, height, flags)
 
-var _destroy_window = sdl.get_function[fn(UnsafePointer[C_Window]) -> None]('SDL_DestroyWindow')
+var _destroy_window = _sdl.get_function[fn(UnsafePointer[C_Window]) -> None]('SDL_DestroyWindow')
 fn destroy_window(window: UnsafePointer[C_Window]) -> None:
     _destroy_window(window)
 
-var _get_window_surface = sdl.get_function[fn(UnsafePointer[C_Window]) -> UnsafePointer[C_Surface]]('SDL_GetWindowSurface')
+var _get_window_surface = _sdl.get_function[fn(UnsafePointer[C_Window]) -> UnsafePointer[C_Surface]]('SDL_GetWindowSurface')
 fn get_window_surface(window: UnsafePointer[C_Window]) -> UnsafePointer[C_Surface]:
     return _get_window_surface(window)
 
-var _update_window_surface = sdl.get_function[fn(UnsafePointer[C_Window]) -> Int32]('SDL_UpdateWindowSurface')
+var _update_window_surface = _sdl.get_function[fn(UnsafePointer[C_Window]) -> Int32]('SDL_UpdateWindowSurface')
 fn update_window_surface(window: UnsafePointer[C_Window]) -> Int32:
     return _update_window_surface(window)
 
-var _create_rgb_surface = sdl.get_function[
+var _create_rgb_surface = _sdl.get_function[
     fn(UInt32, Int32, Int32, Int32, UInt32, UInt32, UInt32, UInt32) -> UnsafePointer[C_Surface]
 ]('SDL_CreateRGBSurface')
 fn create_rgb_surface(
@@ -205,17 +197,17 @@ fn create_rgb_surface(
 ) -> UnsafePointer[C_Surface]:
     return _create_rgb_surface(flags, width, height, depth, rmask, gmask, bmask, amask)
 
-var _free_surface = sdl.get_function[fn(UnsafePointer[C_Surface]) -> None]('SDL_FreeSurface')
+var _free_surface = _sdl.get_function[fn(UnsafePointer[C_Surface]) -> None]('SDL_FreeSurface')
 fn free_surface(surface: UnsafePointer[C_Surface]):
     _free_surface(surface)
 
-var _convert_surface = sdl.get_function[
+var _convert_surface = _sdl.get_function[
     fn(UnsafePointer[C_Surface], UnsafePointer[C_PixelFormat], UInt32) -> UnsafePointer[C_Surface]
 ]('SDL_ConvertSurface')
 fn convert_surface(source: UnsafePointer[C_Surface], format: UnsafePointer[C_PixelFormat], flags: UInt32) -> UnsafePointer[C_Surface]:
     return _convert_surface(source, format, flags) 
 
-var _fill_rect = sdl.get_function[fn(UnsafePointer[C_Surface], UnsafePointer[Rect], UInt32) -> Int32]('SDL_FillRect')
+var _fill_rect = _sdl.get_function[fn(UnsafePointer[C_Surface], UnsafePointer[Rect], UInt32) -> Int32]('SDL_FillRect')
 fn fill_rect(surface: UnsafePointer[C_Surface], rect: UnsafePointer[Rect], color: UInt32) -> Int32:
     return _fill_rect(surface, rect, color)
 
@@ -230,7 +222,7 @@ fn fill_rect(surface: UnsafePointer[C_Surface], rect: UnsafePointer[Rect], color
 # ) -> Int32:
 #     return _blit_surface(source_surface, source_rect, destination_surface, destination_rect)
 
-var _blit_scaled = sdl.get_function[
+var _blit_scaled = _sdl.get_function[
     fn(UnsafePointer[C_Surface], UnsafePointer[Rect], UnsafePointer[C_Surface], UnsafePointer[Rect]) -> Int32
 ]('SDL_UpperBlitScaled')
 fn blit_scaled(
