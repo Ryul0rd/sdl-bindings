@@ -1,3 +1,5 @@
+"""Defines SDL Events."""
+
 alias C_Char = UInt8
 
 
@@ -20,15 +22,39 @@ alias AUDIODEVICEADDED = 0x1100
 alias AUDIODEVICEREMOVED = 0x1101
 
 alias Event = Variant[
-    QuitEvent, WindowEvent,
-    KeyDownEvent, KeyUpEvent, TextEditingEvent, TextInputEvent, KeyMapChangedEvent,
-    MouseMotionEvent, MouseButtonEvent,
+    QuitEvent,
+    WindowEvent,
+    KeyDownEvent,
+    KeyUpEvent,
+    TextEditingEvent,
+    TextInputEvent,
+    KeyMapChangedEvent,
+    MouseMotionEvent,
+    MouseButtonEvent,
     AudioDeviceEvent,
 ]
 
+# alias C_EventAction = Variant[C_ADDEVENT, C_PEEKEVENT, C_GETEVENT]
+# @value
+# struct C_ADDEVENT: pass
+# @value
+# struct C_PEEKEVENT: pass
+# @value
+# struct C_GETEVENT: pass
+
+
+fn event_list() -> List[Event]:
+    var l = List[Event]()
+    var event_ptr = UnsafePointer[_Event].alloc(1)
+    while poll_event(event_ptr) != 0:
+        l.append(event_ptr[].to_nonc())
+    return l
+
+
 @value
-struct C_Event:
-    '''Total size is 56 bytes.'''
+struct _Event:
+    """Total size is 56 bytes."""
+
     var type: UInt32
     var data0: SIMD[DType.uint8, 4]
     var data1: SIMD[DType.uint8, 16]
@@ -63,7 +89,7 @@ struct C_Event:
         elif self.type == AUDIODEVICEADDED or self.type == AUDIODEVICEREMOVED:
             return ptr.bitcast[AudioDeviceEvent]()[]
         else:
-            print('Unhandled event type: ' + String(self.type))
+            print("Unhandled event type: " + String(self.type))
             return ptr.bitcast[QuitEvent]()[]
 
 
@@ -71,6 +97,7 @@ struct C_Event:
 struct QuitEvent:
     var _type: UInt32
     var timestamp: UInt32
+
 
 @value
 struct WindowEvent:
@@ -84,6 +111,7 @@ struct WindowEvent:
     var data1: Int32
     var data2: Int32
 
+
 @value
 struct KeyDownEvent:
     var _type: UInt32
@@ -96,8 +124,9 @@ struct KeyDownEvent:
     var keysym: Keysym
 
     fn __getattr__[name: StringLiteral](self) -> Int32:
-        constrained[name == 'key', 'Not a valid attr']()
+        constrained[name == "key", "Not a valid attr"]()
         return self.keysym.sym
+
 
 @value
 struct KeyUpEvent:
@@ -111,8 +140,9 @@ struct KeyUpEvent:
     var keysym: Keysym
 
     fn __getattr__[name: StringLiteral](self) -> Int32:
-        constrained[name == 'key', 'Not a valid attr']()
+        constrained[name == "key", "Not a valid attr"]()
         return self.keysym.sym
+
 
 @value
 struct Keysym:
@@ -120,6 +150,7 @@ struct Keysym:
     var sym: Int32
     var mode: UInt16
     var unused: UInt32
+
 
 @value
 struct TextEditingEvent:
@@ -130,6 +161,7 @@ struct TextEditingEvent:
     var start: Int32
     var length: Int32
 
+
 @value
 struct TextInputEvent:
     var _type: UInt32
@@ -137,10 +169,12 @@ struct TextInputEvent:
     var window_id: UInt32
     var text: UnsafePointer[C_Char]
 
+
 @value
 struct KeyMapChangedEvent:
     var _type: UInt32
     var timestamp: UInt32
+
 
 @value
 struct MouseMotionEvent:
@@ -153,6 +187,7 @@ struct MouseMotionEvent:
     var y: UInt8
     var xrel: Int32
     var yrel: Int32
+
 
 @value
 struct MouseButtonEvent:
@@ -167,6 +202,7 @@ struct MouseButtonEvent:
     var x: Int32
     var y: Int32
 
+
 @value
 struct AudioDeviceEvent:
     var type: UInt32
@@ -175,26 +211,12 @@ struct AudioDeviceEvent:
     var iscapture: UInt8
 
 
-fn event_list() -> List[Event]:
-    var l = List[Event]()
-    var event_ptr = UnsafePointer.address_of(C_Event())
-    while poll_event(event_ptr) != 0:
-        l.append(event_ptr[].to_nonc())
-    return l
+var _poll_event = _sdl.get_function[fn (UnsafePointer[_Event]) -> Int32]("SDL_PollEvent")
 
 
-# alias C_EventAction = Variant[C_ADDEVENT, C_PEEKEVENT, C_GETEVENT]
-# @value
-# struct C_ADDEVENT: pass
-# @value
-# struct C_PEEKEVENT: pass
-# @value
-# struct C_GETEVENT: pass
-
-
-var _poll_event = _sdl.get_function[fn(UnsafePointer[C_Event]) -> Int32]('SDL_PollEvent')
-fn poll_event(event: UnsafePointer[C_Event]) -> Int32:
+fn poll_event(event: UnsafePointer[_Event]) -> Int32:
     return _poll_event(event)
 
-# var _peep_events = sdl.get_function[fn(UnsafePointer[C_Event], Int32, UInt8, UInt32, UInt32) -> Int32]('SDL_PeepEvents')
+
+# var _peep_events = _sdl.get_function[fn(UnsafePointer[C_Event], Int32, UInt8, UInt32, UInt32) -> Int32]('SDL_PeepEvents')
 # fn peep_events(events: UnsafePointer[C_Event], numevents: Int32, action: C_EventAction, min_type: Int32, max_type: Int32) -> Int32:

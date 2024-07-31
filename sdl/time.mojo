@@ -1,3 +1,5 @@
+"""Defines an SDL Clock."""
+
 from time import now, sleep
 
 
@@ -24,10 +26,15 @@ struct Clock:
         self._last_tick_time = tick_time
 
 
-var _get_ticks = _sdl.get_function[fn() -> UInt32]('SDL_GetTicks')
+var _get_ticks = _sdl.get_function[fn () -> UInt32]("SDL_GetTicks")
+
+
 fn get_ticks() -> UInt32:
     return _get_ticks()
 
-var _delay = _sdl.get_function[fn(ms: UInt32) -> None]('SDL_Delay')
+
+var _delay = _sdl.get_function[fn (ms: UInt32) -> None]("SDL_Delay")
+
+
 fn delay(ms: UInt32):
     _delay(ms)
