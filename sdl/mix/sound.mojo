@@ -1,4 +1,4 @@
-from .misc import get_error
+"""Defines SDL Sound."""
 
 
 alias AUDIO_U8 = 0x0008
@@ -53,47 +53,78 @@ struct C_MixMusic:
     pass
 
 
-var _open_audio = _sdl_mix.get_function[fn(Int32, UInt16, Int32, Int32) -> Int32]('Mix_OpenAudio')
+var _open_audio = _sdl_mix.get_function[fn (Int32, UInt16, Int32, Int32) -> Int32]("Mix_OpenAudio")
+
+
 fn open_audio(frequency: Int32, format: UInt16, channels: Int32, chunksize: Int32) raises:
     var error_code = _open_audio(frequency, format, channels, chunksize)
     if error_code != 0:
-        raise Error('Failed to initialize SDL Mixer')
+        raise Error("Failed to initialize SDL Mixer")
 
-var _close_audio = _sdl_mix.get_function[fn() -> None]('Mix_CloseAudio')
+
+var _close_audio = _sdl_mix.get_function[fn () -> None]("Mix_CloseAudio")
+
+
 fn close_audio():
     _close_audio()
 
+
 # TODO: figure out why this segfaults
-var _load_wav = _sdl_mix.get_function[fn(UnsafePointer[UInt8]) -> UnsafePointer[C_MixChunk]]('Mix_LoadWAV')
+var _load_wav = _sdl_mix.get_function[fn (UnsafePointer[UInt8]) -> UnsafePointer[C_MixChunk]](
+    "Mix_LoadWAV"
+)
+
+
 fn load_wav(name: String) raises -> MixChunk:
     var c_mixchunk_ptr = _load_wav(name.unsafe_ptr())
     if not c_mixchunk_ptr:
-        raise Error('Failed to load WAV: ' + get_error())
+        raise Error("Failed to load WAV: " + get_error())
     return MixChunk(c_mixchunk_ptr)
 
-var _free_chunk = _sdl_mix.get_function[fn(UnsafePointer[C_MixChunk]) -> None]('Mix_FreeChunk')
+
+var _free_chunk = _sdl_mix.get_function[fn (UnsafePointer[C_MixChunk]) -> None]("Mix_FreeChunk")
+
+
 fn free_chunk(c_mixchunk_ptr: UnsafePointer[C_MixChunk]):
     _free_chunk(c_mixchunk_ptr)
 
-var _play_channel = _sdl_mix.get_function[fn(Int32, UnsafePointer[C_MixChunk], Int32) -> Int32]('Mix_PlayChannel')
+
+var _play_channel = _sdl_mix.get_function[fn (Int32, UnsafePointer[C_MixChunk], Int32) -> Int32](
+    "Mix_PlayChannel"
+)
+
+
 fn play_channel(channel: Int32, mix_chunk: UnsafePointer[C_MixChunk], loops: Int32) raises:
     var error_code = _play_channel(channel, mix_chunk, loops)
     if error_code != 0:
-        raise Error('Failed to play channel')
+        raise Error("Failed to play channel")
 
-var _load_mus = _sdl_mix.get_function[fn(UnsafePointer[UInt8]) -> UnsafePointer[C_MixMusic]]('Mix_LoadMUS')
+
+var _load_mus = _sdl_mix.get_function[fn (UnsafePointer[UInt8]) -> UnsafePointer[C_MixMusic]](
+    "Mix_LoadMUS"
+)
+
+
 fn load_music(name: String) raises -> MixMusic:
     var c_mixmusic_ptr = _load_mus(name.unsafe_ptr())
     if not c_mixmusic_ptr:
-        raise Error('Failed to load sound file: ' + get_error())
+        raise Error("Failed to load sound file: " + get_error())
     return MixMusic(c_mixmusic_ptr)
 
-var _free_music = _sdl_mix.get_function[fn(UnsafePointer[C_MixMusic]) -> None]('Mix_FreeMusic')
+
+var _free_music = _sdl_mix.get_function[fn (UnsafePointer[C_MixMusic]) -> None]("Mix_FreeMusic")
+
+
 fn free_music(c_mixmusic_ptr: UnsafePointer[C_MixMusic]):
     _free_music(c_mixmusic_ptr)
 
-var _play_music = _sdl_mix.get_function[fn(UnsafePointer[C_MixMusic], Int32) -> Int32]('Mix_PlayMusic')
+
+var _play_music = _sdl_mix.get_function[fn (UnsafePointer[C_MixMusic], Int32) -> Int32](
+    "Mix_PlayMusic"
+)
+
+
 fn play_music(music: UnsafePointer[C_MixMusic], loops: Int32) raises:
     var error_code = _play_music(music, loops)
     if error_code != 0:
-        raise Error('Failed to play sound file')
+        raise Error("Failed to play sound file")

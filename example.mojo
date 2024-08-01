@@ -1,5 +1,5 @@
 import sdl
-from sdl import keys
+from sdl import Keys
 
 # TODO: collision rect/point
 # TODO: mouse stuff? (getting mouse position and click events)
@@ -23,7 +23,7 @@ fn main() raises:
     var hello = font.render_solid('Hello, World!', sdl.Color(255, 0, 255, 255))
     hello.convert(window.surface)
 
-    var test_sound = sdl.load_music('assets/Audio/error_003.ogg')
+    var test_sound = sdl.load_music('assets/audio/error_003.ogg')
 
     var player_color = sdl.Color(255, 0, 0, 255)
     var background_color = sdl.Color(255, 255, 255, 255)
@@ -38,19 +38,19 @@ fn main() raises:
             elif event[].isa[sdl.KeyDownEvent]():
                 var e = event[][sdl.KeyDownEvent]
                 held_keys[int(e.key)] = True
-                if e.key == keys.space:
+                if e.key == Keys.space:
                     test_sound.play(1)
             elif event[].isa[sdl.KeyUpEvent]():
                 var e = event[][sdl.KeyUpEvent]
                 held_keys[int(e.key)] = False
 
-        if held_keys[keys.w]:
+        if held_keys[Keys.w]:
             player_box.y -= int(player_speed * clock.delta_time)
-        if held_keys[keys.a]:
+        if held_keys[Keys.a]:
             player_box.x -= int(player_speed * clock.delta_time)
-        if held_keys[keys.s]:
+        if held_keys[Keys.s]:
             player_box.y += int(player_speed * clock.delta_time)
-        if held_keys[keys.d]:
+        if held_keys[Keys.d]:
             player_box.x += int(player_speed * clock.delta_time)
 
         window.surface.fill(background_color)
