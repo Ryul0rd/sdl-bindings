@@ -168,9 +168,7 @@ var _get_window_surface = _sdl.get_function[fn (UnsafePointer[_Window]) -> Unsaf
 )
 
 
-fn get_window_surface(
-    window: UnsafePointer[_Window],
-) -> UnsafePointer[_Surface]:
+fn get_window_surface(window: UnsafePointer[_Window]) -> UnsafePointer[_Surface]:
     return _get_window_surface(window)
 
 

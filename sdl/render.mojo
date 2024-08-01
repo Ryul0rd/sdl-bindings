@@ -21,10 +21,7 @@ struct Renderer:
         self.window = window^
         self.surface = _Ptr[_Surface]()
 
-    fn __init__(
-        inout self,
-        owned surface: Surface,
-    ) raises:
+    fn __init__(inout self, owned surface: Surface) raises:
         self._renderer_ptr = create_software_renderer(surface._surface_ptr)
         self.window = _Ptr[_Window]()
         self.surface = surface^
