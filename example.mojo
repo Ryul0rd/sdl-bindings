@@ -2,8 +2,6 @@ from sdl import *
 
 # TODO: collision rect/point
 
-# package: `mojo package -o mojo_sdl.mojopkg src`
-
 def main():
     alias screen_width = 640
     alias screen_height = 480
