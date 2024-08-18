@@ -17,7 +17,7 @@ struct _TTF:
     var _ttf_render_text_shaded: SDL_Fn["TTF_RenderText_Shaded", fn (Ptr[_Font], Ptr[CharC], UInt32, UInt32) -> Ptr[_Surface]]
     var _ttf_render_text_blended: SDL_Fn["TTF_RenderText_Blended", fn (Ptr[_Font], Ptr[CharC], UInt32) -> UnsafePointer[_Surface]]
 
-    fn __init__[init: Bool](inout self, error: SDL_Error):
+    fn __init__(inout self, error: SDL_Error) raises:
         self._handle = DLHandle("/lib/x86_64-linux-gnu/libSDL2_ttf-2.0.so.0")
         self.error = error
         self._ttf_init = self._handle
@@ -27,9 +27,6 @@ struct _TTF:
         self._ttf_render_text_solid = self._handle
         self._ttf_render_text_shaded = self._handle
         self._ttf_render_text_blended = self._handle
-
-    fn __init__(inout self, error: SDL_Error) raises:
-        self.__init__[False](error)
         self.init()
 
     fn __del__(owned self):
