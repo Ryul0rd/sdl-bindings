@@ -1,18 +1,20 @@
-"""Defines SDL Keys."""
+"""Defines SDL Keyboard and Keys."""
+
+from .utils import adr
+from ._sdl import _SDL
 
 
-var _get_keyboard_state = _sdl.get_function[fn (UnsafePointer[Int32]) -> UnsafePointer[UInt8]](
-    "SDL_GetKeyboardState"
-)
+struct Keyboard[lif: AnyLifetime[False].type]:
+    var sdl: Reference[SDL, lif]
+    var state: Ptr[UInt8]
 
+    fn __init__(inout self, ref[lif]sdl: SDL):
+        self.sdl = sdl
+        var numkeys = IntC()
+        self.state = sdl._sdl.get_keyboard_state(adr(numkeys))
 
-fn get_keyboard_state() -> List[Bool]:
-    var len_ptr = UnsafePointer.address_of(Int32())
-    var keys_ptr = _get_keyboard_state(len_ptr)
-    var keys_list = List[Bool](capacity=int(len_ptr[]))
-    for i in range(len_ptr[]):
-        keys_list.append(bool(keys_ptr[i]))
-    return keys_list
+    fn get_key(self, key: KeyCode) -> Bool:
+        return bool(self.state[int(key.value)])
 
 
 struct Keys:
@@ -88,7 +90,12 @@ struct Keys:
     alias z = ord("z")
 
 
+@value
+@register_passable("trivial")
 struct KeyCode:
+
+    var value: IntC
+
     alias UNKNOWN = 0
 
     alias A = 4

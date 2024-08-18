@@ -3,17 +3,24 @@
 
 @value
 struct Pixels:
-    var _ptr: UnsafePointer[NoneType]
-    var pitch: Int
+    var _ptr: Ptr[NoneType]
+    var pitch: IntC
 
 
-struct _Palette:
-    pass
+struct Palette:
+    var ncolors: IntC
+    """The number of colors in the palette."""
+    var colors: Ptr[Color]
+    """An array of SDL_Color structures representing the palette."""
+    var version: UInt32
+    """Incrementally tracks changes to the palette (internal use)."""
+    var refcount: IntC
+    """Reference count (internal use)."""
 
 
 struct SurfacePixelFormat:
     var format: UInt32
-    var palette: UnsafePointer[_Palette]
+    var palette: Ptr[Palette]
     var bits_per_pixel: UInt8
     var bytes_per_pixel: UInt8
     var padding: UInt16
@@ -30,7 +37,7 @@ struct SurfacePixelFormat:
     var bshift: UInt8
     var ashift: UInt8
     var refcount: Int32
-    var next: UnsafePointer[SurfacePixelFormat]
+    var next: Ptr[SurfacePixelFormat]
 
 
 struct TexturePixelFormat:
