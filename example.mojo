@@ -24,11 +24,11 @@ def main():
     var player_box = Rect(100, 100, 50, 50)
     var player_speed = 200
 
-    var playing = 1
+    var playing = True
     while playing:
         for event in sdl.event_list():
             if event[].isa[QuitEvent]():
-                playing = 0
+                playing = False
             elif event[].isa[KeyDownEvent]():
                 var e = event[][KeyDownEvent]
                 held_keys[int(e.key)] = True
