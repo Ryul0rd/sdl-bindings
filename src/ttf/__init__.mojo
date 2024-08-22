@@ -7,6 +7,7 @@ from .font import Font, _Font
 
 
 struct _TTF:
+    var _initialized: Bool
     var _handle: DLHandle
     var error: SDL_Error
     var _ttf_init: SDL_Fn["TTF_Init", fn () -> Int32]
@@ -17,7 +18,12 @@ struct _TTF:
     var _ttf_render_text_shaded: SDL_Fn["TTF_RenderText_Shaded", fn (Ptr[_Font], Ptr[CharC], UInt32, UInt32) -> Ptr[_Surface]]
     var _ttf_render_text_blended: SDL_Fn["TTF_RenderText_Blended", fn (Ptr[_Font], Ptr[CharC], UInt32) -> UnsafePointer[_Surface]]
 
-    fn __init__(inout self, error: SDL_Error) raises:
+    fn __init__(inout self, none: NoneType):
+        self._initialized = False
+        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(self))
+
+    fn __init__[init: Bool](inout self, error: SDL_Error):
+        self._initialized = True
         self._handle = DLHandle("/lib/x86_64-linux-gnu/libSDL2_ttf-2.0.so.0")
         self.error = error
         self._ttf_init = self._handle
@@ -27,10 +33,14 @@ struct _TTF:
         self._ttf_render_text_solid = self._handle
         self._ttf_render_text_shaded = self._handle
         self._ttf_render_text_blended = self._handle
+
+    fn __init__(inout self, error: SDL_Error) raises:
+        self.__init__[False](error)
         self.init()
 
     fn __del__(owned self):
-        self.quit()
+        if self._initialized:
+            self.quit()
 
     @always_inline
     fn init(self) raises:

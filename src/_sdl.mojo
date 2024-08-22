@@ -1,6 +1,7 @@
 """Defines an SDL struct."""
 
-from sys.ffi import DLHandle
+from sys import DLHandle, info
+from pathlib import Path
 from collections import Optional
 from .window import _Window, _GLContext
 from .surface import _Surface
@@ -35,6 +36,10 @@ struct SDL:
         gamecontroller: Bool = False,
         events: Bool = False,
         everything: Bool = False,
+        gfx: Bool = False,
+        img: Bool = False,
+        mix: Bool = False,
+        ttf: Bool = False
     ) raises:
         """This initializes SDL bindings, and SDL itself.
         
@@ -43,10 +48,25 @@ struct SDL:
         self._sdl = _SDL()
 
         # libraries
-        self.gfx = _GFX(self._sdl.error)
-        self.img = _IMG(self._sdl.error)
-        self.mix = _MIX(self._sdl.error)
-        self.ttf = _TTF(self._sdl.error)
+        if gfx:
+            self.gfx = _GFX(self._sdl.error)
+        else:
+            self.gfx = None
+        
+        if img:
+            self.img = _IMG(self._sdl.error)
+        else:
+            self.img = None
+
+        if mix:
+            self.mix = _MIX(self._sdl.error)
+        else:
+            self.mix = None
+
+        if ttf:
+            self.ttf = _TTF(self._sdl.error)
+        else:
+            self.ttf = None
 
         # x--- set window flags
         var flags: UInt32 = 0
@@ -71,7 +91,7 @@ struct SDL:
         var event_ptr = Ptr[_Event].alloc(1)
         var result = Optional[Event](None)
         if self._sdl.poll_event(event_ptr) != 0:
-            result = event_ptr[].to_nonc()
+            result = _Event.to_event(event_ptr)
         event_ptr.free()
         return result
 
@@ -79,7 +99,7 @@ struct SDL:
         var l = List[Event]()
         var event_ptr = Ptr[_Event].alloc(1)
         while self._sdl.poll_event(event_ptr) != 0:
-            l.append(event_ptr[].to_nonc())
+            l.append(_Event.to_event(event_ptr))
         event_ptr.free()
         return l
 
@@ -311,7 +331,23 @@ struct _SDL:
 
     fn __init__(inout self) raises:
         # x--- initialize sdl bindings
-        self._handle = DLHandle("/lib/x86_64-linux-gnu/libSDL2-2.0.so")
+        if info.os_is_linux():
+            if Path("/lib/x86_64-linux-gnu/libSDL2-2.0.so").exists():
+                self._handle = DLHandle("/lib/x86_64-linux-gnu/libSDL2-2.0.so")
+            elif Path("/lib/x86_64-linux-gnu/libSDL2-2.0.so.0").exists():
+                self._handle = DLHandle("/lib/x86_64-linux-gnu/libSDL2-2.0.so.0")
+            else:
+                raise "Could not find SDL"
+        elif info.os_is_macos():
+            if Path("/opt/homebrew/lib/libSDL2.dylib").exists():
+                self._handle = DLHandle("/opt/homebrew/lib/libSDL2.dylib")
+            elif Path("/opt/homebrew/Cellar/sdl2/2.30.6/lib/libSDL2.dylib").exists():
+                self._handle = DLHandle("/opt/homebrew/Cellar/sdl2/2.30.6/lib/libSDL2.dylib") 
+            else:
+                raise "Could not find SDL"
+        else:
+            raise "Unknown OS"
+        
         self._init = self._handle
         self._quit = self._handle
         self._init_sub_system = self._handle

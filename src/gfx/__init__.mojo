@@ -14,6 +14,9 @@ struct _GFX:
     var _circle_color: SDL_Fn["circleColor", fn (UnsafePointer[_Renderer], Int16, Int16, Int16, UInt32) -> IntC]
     var _circle_rgba: SDL_Fn["circleRGBA", fn (UnsafePointer[_Renderer], Int16, Int16, Int16, UInt8, UInt8, UInt8, UInt8) -> IntC]
 
+    fn __init__(inout self, none: NoneType):
+        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(self))
+
     fn __init__(inout self, error: SDL_Error):
         self._handle = DLHandle("/lib/x86_64-linux-gnu/libSDL2_gfx-1.0.so.0")
         self.error = error

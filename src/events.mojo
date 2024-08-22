@@ -244,6 +244,7 @@ alias Event = Variant[
 
 
 @value
+@register_passable("trivial")
 struct _Event:
     """Total size is 56 bytes."""
 
@@ -258,33 +259,33 @@ struct _Event:
         self.data1 = 0
         self.data2 = 0
 
-    fn to_nonc(owned self) -> Event:
-        var ptr = Ptr.address_of(self)
-        if self.type == EventType.QUIT:
-            return ptr.bitcast[QuitEvent]()[]
-        elif self.type == EventType.WINDOWEVENT:
-            return ptr.bitcast[WindowEvent]()[]
-        elif self.type == EventType.KEYDOWN:
-            return ptr.bitcast[KeyDownEvent]()[]
-        elif self.type == EventType.KEYUP:
-            return ptr.bitcast[KeyUpEvent]()[]
-        elif self.type == EventType.TEXTEDITING:
-            return ptr.bitcast[TextEditingEvent]()[]
-        elif self.type == EventType.TEXTINPUT:
-            return ptr.bitcast[TextInputEvent]()[]
-        elif self.type == EventType.KEYMAPCHANGED:
-            return ptr.bitcast[KeyMapChangedEvent]()[]
-        elif self.type == EventType.MOUSEMOTION:
-            return ptr.bitcast[MouseMotionEvent]()[]
-        elif self.type == EventType.MOUSEBUTTONDOWN or self.type == EventType.MOUSEBUTTONUP:
-            return ptr.bitcast[MouseButtonEvent]()[]
-        elif self.type == EventType.MOUSEWHEEL:
-            return ptr.bitcast[MouseWheelEvent]()[]
-        elif self.type == EventType.AUDIODEVICEADDED or self.type == EventType.AUDIODEVICEREMOVED:
-            return ptr.bitcast[AudioDeviceEvent]()[]
+    @staticmethod
+    fn to_event(_event: Ptr[_Event]) -> Event:
+        if _event[].type == EventType.QUIT:
+            return _event.bitcast[QuitEvent]()[]
+        elif _event[].type == EventType.WINDOWEVENT:
+            return _event.bitcast[WindowEvent]()[]
+        elif _event[].type == EventType.KEYDOWN:
+            return _event.bitcast[KeyDownEvent]()[]
+        elif _event[].type == EventType.KEYUP:
+            return _event.bitcast[KeyUpEvent]()[]
+        elif _event[].type == EventType.TEXTEDITING:
+            return _event.bitcast[TextEditingEvent]()[]
+        elif _event[].type == EventType.TEXTINPUT:
+            return _event.bitcast[TextInputEvent]()[]
+        elif _event[].type == EventType.KEYMAPCHANGED:
+            return _event.bitcast[KeyMapChangedEvent]()[]
+        elif _event[].type == EventType.MOUSEMOTION:
+            return _event.bitcast[MouseMotionEvent]()[]
+        elif _event[].type == EventType.MOUSEBUTTONDOWN or _event[].type == EventType.MOUSEBUTTONUP:
+            return _event.bitcast[MouseButtonEvent]()[]
+        elif _event[].type == EventType.MOUSEWHEEL:
+            return _event.bitcast[MouseWheelEvent]()[]
+        elif _event[].type == EventType.AUDIODEVICEADDED or _event[].type == EventType.AUDIODEVICEREMOVED:
+            return _event.bitcast[AudioDeviceEvent]()[]
         else:
-            print("Unhandled event type: " + str(self.type))
-            return ptr.bitcast[QuitEvent]()[]
+            print("Unhandled event type: " + str(_event[].type))
+            return _event.bitcast[QuitEvent]()[]
 
 
 @value

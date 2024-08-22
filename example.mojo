@@ -2,16 +2,17 @@ from sdl import *
 
 # TODO: collision rect/point
 
+
 def main():
     alias screen_width = 640
     alias screen_height = 480
 
-    var sdl = SDL(video=True, audio=True, timer=True, events=True)
+    var sdl = SDL(video=True, audio=True, timer=True, events=True, gfx=True, img=True, mix=True, ttf=True)
     var window = Window(sdl, 'SDL Test', screen_width, screen_height)
     var clock = Clock(sdl, target_fps=60)
     var held_keys = SIMD[DType.bool, 512]()
 
-    var apple = Surface(sdl, sdl.img.load_image('assets/apple.png'))
+    var apple = Surface(sdl, sdl.img.load_image(('assets/apple.png').unsafe_cstr_ptr().bitcast[DType.uint8]()))
     var rotated_apple = Surface(sdl, sdl.gfx.rotozoom_surface(apple, 90, 1, True))
     var font = ttf.Font(sdl, "assets/Beef'd.ttf", 24)
     var hello = font.render_solid('Hello, World!', Color(255, 0, 255, 255))
@@ -28,7 +29,7 @@ def main():
     while playing:
         for event in sdl.event_list():
             if event[].isa[QuitEvent]():
-                playing = False
+                playing = 0
             elif event[].isa[KeyDownEvent]():
                 var e = event[][KeyDownEvent]
                 held_keys[int(e.key)] = True
