@@ -43,7 +43,7 @@ struct Renderer[lif: AnyLifetime[False].type]:
         elif type.is_floating_point():
             self.sdl[]._sdl.render_copy_f(self._renderer_ptr, texture._texture_ptr, opt2ptr(src), Ptr[FRect]())
 
-    fn copy[type: DType](self, texture: Texture, src: Optional[Rect], dst: DRect[type]) raises:
+    fn copy[type: DType = DType.int32](self, texture: Texture, src: Optional[Rect], dst: DRect[type]) raises:
         @parameter
         if type.is_integral():
             self.sdl[]._sdl.render_copy(self._renderer_ptr, texture._texture_ptr, opt2ptr(src), adr(dst.cast[DType.int32]()))
@@ -148,7 +148,7 @@ struct Renderer[lif: AnyLifetime[False].type]:
         self.sdl[]._sdl.get_renderer_output_size(self._renderer_ptr, adr(w), adr(h))
         return int(w), int(h)
 
-    fn draw_point[type: DType](self, x: Scalar[type], y: Scalar[type]) raises:
+    fn draw_point[type: DType = DType.float32](self, x: Scalar[type], y: Scalar[type]) raises:
         @parameter
         if type.is_integral():
             self.sdl[]._sdl.render_draw_point(self._renderer_ptr, x.cast[DType.int32](), y.cast[DType.int32]())
@@ -161,15 +161,12 @@ struct Renderer[lif: AnyLifetime[False].type]:
     fn draw_points(self, points: List[FPoint]) raises:
         self.sdl[]._sdl.render_draw_points_f(self._renderer_ptr, points.unsafe_ptr(), len(points))
 
-    fn draw_line[type: DType](self, x1: Scalar[type], y1: Scalar[type], x2: Scalar[type], y2: Scalar[type]) raises:
+    fn draw_line[type: DType = DType.float32](self, x1: Scalar[type], y1: Scalar[type], x2: Scalar[type], y2: Scalar[type]) raises:
         @parameter
         if type.is_integral():
             self.sdl[]._sdl.render_draw_line(self._renderer_ptr, x1.cast[DType.int32](), y1.cast[DType.int32](), x2.cast[DType.int32](), y2.cast[DType.int32]())
         elif type.is_floating_point():
             self.sdl[]._sdl.render_draw_line_f(self._renderer_ptr, x1.cast[DType.float32](), y1.cast[DType.float32](), x2.cast[DType.float32](), y2.cast[DType.float32]())
-
-    fn draw_circle[type: DType](self, center: DPoint[type], radius: Scalar) raises:
-        self.sdl[].gfx.circle_color(self._renderer_ptr, center.x.cast[DType.int16](), center.y.cast[DType.int16](), radius.cast[DType.int16](), self.get_color().as_uint32())
 
     fn draw_lines(self, points: List[Point]) raises:
         self.sdl[]._sdl.render_draw_lines(self._renderer_ptr, points.unsafe_ptr(), len(points))
@@ -177,7 +174,10 @@ struct Renderer[lif: AnyLifetime[False].type]:
     fn draw_lines(self, points: List[FPoint]) raises:
         self.sdl[]._sdl.render_draw_lines_f(self._renderer_ptr, points.unsafe_ptr(), len(points))
 
-    fn draw_rect[type: DType](self, rect: DRect[type]) raises:
+    fn draw_circle[type: DType = DType.float32](self, center: DPoint[type], radius: Scalar) raises:
+        self.sdl[].gfx.circle_color(self._renderer_ptr, center.x.cast[DType.int16](), center.y.cast[DType.int16](), radius.cast[DType.int16](), self.get_color().as_uint32())
+
+    fn draw_rect[type: DType = DType.float32](self, rect: DRect[type]) raises:
         @parameter
         if type.is_integral():
             self.sdl[]._sdl.render_draw_rect(self._renderer_ptr, rect.cast[DType.int32]())
@@ -190,7 +190,7 @@ struct Renderer[lif: AnyLifetime[False].type]:
     fn draw_rects(self, rects: List[FRect]) raises:
         self.sdl[]._sdl.render_draw_rects_f(self._renderer_ptr, rects.unsafe_ptr(), len(rects))
 
-    fn fill_rect[type: DType](self, rect: DRect[type]) raises:
+    fn fill_rect[type: DType = DType.float32](self, rect: DRect[type]) raises:
         @parameter
         if type.is_integral():
             self.sdl[]._sdl.render_fill_rect(self._renderer_ptr, rect.cast[DType.int32]())

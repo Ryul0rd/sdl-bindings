@@ -121,41 +121,41 @@ struct BlendMode:
 
     var value: IntC
 
-    alias NONE = 0x00000000
+    alias NONE: IntC = 0x00000000
     """No blending.
 
         dstRGBA = srcRGBA
     """
 
-    alias BLEND = 0x00000001
+    alias BLEND: IntC = 0x00000001
     """Alpha blending.
 
         dstRGB = (srcRGB * srcA) + (dstRGB * (1-srcA))
         dstA = srcA + (dstA * (1-srcA))
     """
 
-    alias ADD = 0x00000002
+    alias ADD: IntC = 0x00000002
     """Additive blending.
 
         dstRGB = (srcRGB * srcA) + dstRGB
         dstA = dstA
     """
 
-    alias MOD = 0x00000004
+    alias MOD: IntC = 0x00000004
     """Color modulate.
 
         dstRGB = srcRGB * dstRGB
         dstA = dstA
     """
 
-    alias MUL = 0x00000008
+    alias MUL: IntC = 0x00000008
     """Color multiply.
 
         dstRGB = (srcRGB * dstRGB) + (dstRGB * (1-srcA))
         dstA = dstA
     """
 
-    alias INVALID = 0x7FFFFFFF
+    alias INVALID: IntC = 0x7FFFFFFF
     """Invalid."""
 
 
@@ -166,13 +166,13 @@ struct ScaleMode:
 
     var value: IntC
 
-    alias Nearest = 0
+    alias Nearest: IntC = 0
     """Nearest pixel sampling."""
 
-    alias Linear = 1
+    alias Linear: IntC = 1
     """Linear filtering."""
 
-    alias Best = 2
+    alias Best: IntC = 2
     """Anisotropic filtering."""
 
 
@@ -183,11 +183,11 @@ struct TextureModulate:
 
     var value: IntC
 
-    alias NONE = 0x00000000
+    alias NONE: IntC = 0x00000000
     """No modulation."""
 
-    alias COLOR = 0x00000001
+    alias COLOR: IntC = 0x00000001
     """srcC = srcC * color"""
 
-    alias ALPHA = 0x00000002
+    alias ALPHA: IntC = 0x00000002
     """srcA = srcA * alpha"""

@@ -6,6 +6,7 @@ from .sound import MixChunk, _MixChunk, MixMusic, _MixMusic
 
 
 struct _MIX:
+    var _initialized: Bool
     var _handle: DLHandle
     var error: SDL_Error
 
@@ -18,7 +19,12 @@ struct _MIX:
     var _free_music: SDL_Fn["Mix_FreeMusic", fn (Ptr[_MixMusic]) -> NoneType]
     var _play_music: SDL_Fn["Mix_PlayMusic", fn (Ptr[_MixMusic], Int32) -> Int32]
 
-    fn __init__(inout self, error: SDL_Error, frequency: Int32 = 44100, format: UInt16 = sound.AUDIO_S16LSB, channels: Int32 = 2, chunksize: Int32 = 2048) raises:
+    fn __init__(inout self, none: NoneType):
+        self._initialized = False
+        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(self))
+
+    fn __init__[init: Bool](inout self, error: SDL_Error):
+        self._initialized = True
         self._handle = DLHandle("/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so.0")
         self.error = error
         self._open_audio = self._handle
@@ -29,10 +35,14 @@ struct _MIX:
         self._load_mus = self._handle
         self._free_music = self._handle
         self._play_music = self._handle
+
+    fn __init__(inout self, error: SDL_Error, frequency: Int32 = 44100, format: UInt16 = sound.AUDIO_S16LSB, channels: Int32 = 2, chunksize: Int32 = 2048) raises:
+        self.__init__[False](error)
         self.init(frequency, format, channels, chunksize)
 
     fn __del__(owned self):
-        self.quit()
+        if self._initialized:
+            self.quit()
 
     @always_inline
     fn init(self, frequency: Int32, format: UInt16, channels: Int32, chunksize: Int32) raises:
