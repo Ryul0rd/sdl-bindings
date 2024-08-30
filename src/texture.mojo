@@ -1,6 +1,7 @@
 """Defines an SDL Texture."""
 
-from .utils import adr
+from collections import Optional
+from .utils import adr, opt2ptr
 from ._sdl import _SDL
 
 
@@ -44,12 +45,12 @@ struct Texture:
         else:
             self._rc[] -= 1
 
-    fn lock(self, rect: Rect) raises -> Pixels:
+    fn lock(self, rect: Optional[Rect] = None) raises -> Pixels:
         var pixels_ptr: Ptr[NoneType]
         var pixels_pitch: IntC
         __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(pixels_ptr))
         __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(pixels_pitch))
-        self.sdl[]._sdl.lock_texture(self._texture_ptr, adr(rect), adr(pixels_ptr), adr(pixels_pitch))
+        self.sdl[]._sdl.lock_texture(self._texture_ptr, opt2ptr(rect), adr(pixels_ptr), adr(pixels_pitch))
         return Pixels(pixels_ptr, pixels_pitch)
 
     fn unlock(self):

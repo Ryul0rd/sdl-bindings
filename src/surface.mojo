@@ -30,6 +30,12 @@ struct Surface[lif: AnyLifetime[False].type]:
     fn __del__(owned self):
         self.sdl[]._sdl.free_surface(self._surface_ptr)
 
+    fn lock(self) raises:
+        self.sdl[]._sdl.lock_surface(self._surface_ptr)
+
+    fn unlock(self):
+        self.sdl[]._sdl.unlock_surface(self._surface_ptr)
+
     fn fill(self, color: Color, rect: Rect) raises:
         self.sdl[]._sdl.fill_rect(self._surface_ptr, adr(rect), color.as_uint32())
 
@@ -49,8 +55,8 @@ struct Surface[lif: AnyLifetime[False].type]:
             opt2ptr(destination_rect),
         )
 
-    # fn rotozoomed(self, angle: Float64, zoom: Float64, smooth: Bool = False) -> Surface[lif]:
-    #     return rotozoom_surface(self, angle, zoom, smooth)
+    fn rotozoomed(self, angle: Float64, zoom: Float64, smooth: Bool = False) -> Surface[lif]:
+        return Surface(self.sdl[], self.sdl[].gfx.rotozoom_surface(self._surface_ptr, angle, zoom, smooth))
 
     fn convert(inout self, format: Surface):
         self._surface_ptr = self.sdl[]._sdl._convert_surface.call(self._surface_ptr, format._surface_ptr[].format, 0)
