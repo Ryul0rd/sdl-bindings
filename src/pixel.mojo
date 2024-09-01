@@ -1,5 +1,6 @@
 """Defines an SDL Pixel Format."""
 
+from sys.info import is_big_endian
 
 @value
 struct Pixels:
@@ -18,6 +19,8 @@ struct Palette:
     """Reference count (internal use)."""
 
 
+@value
+@register_passable("trivial")
 struct SurfacePixelFormat:
     var format: UInt32
     var palette: Ptr[Palette]
@@ -40,5 +43,10 @@ struct SurfacePixelFormat:
     var next: Ptr[SurfacePixelFormat]
 
 
+@value
+@register_passable("trivial")
 struct TexturePixelFormat:
-    alias RGBA8888: UInt32 = 373694468
+    alias RGBA8888: UInt32 = 0x16462004
+    alias ABGR8888: UInt32 = 0x16762004
+    alias RGBA32: UInt32 = Self.RGBA8888 if is_big_endian() else Self.ABGR8888
+    alias RGB24: UInt32 = 0x17101803

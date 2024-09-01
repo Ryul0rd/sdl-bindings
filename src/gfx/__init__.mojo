@@ -25,8 +25,8 @@ struct _GFX:
         self._circle_rgba = self._handle
 
     @always_inline
-    fn rotozoom_surface(self, source: Surface, angle: Float64, zoom: Float64, smooth: Bool) -> Ptr[_Surface]:
-        return self._rotozoom_surface.call(source._surface_ptr, angle, zoom, Int32(smooth))
+    fn rotozoom_surface(self, source: Ptr[_Surface], angle: Float64, zoom: Float64, smooth: Bool) -> Ptr[_Surface]:
+        return self._rotozoom_surface.call(source, angle, zoom, Int32(smooth))
 
     @always_inline
     fn circle_color(self, renderer: Ptr[_Renderer], x: Int16, y: Int16, rad: Int16, color: UInt32) raises:

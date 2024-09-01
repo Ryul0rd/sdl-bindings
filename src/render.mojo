@@ -10,25 +10,21 @@ struct Renderer[lif: AnyLifetime[False].type]:
     var sdl: Reference[SDL, lif]
     var _renderer_ptr: Ptr[_Renderer]
     var window: Window[lif]
-    var surface: Surface[lif]
 
-    fn __init__(inout self, owned window: Window[lif], index: Int = -1, flags: UInt32 = RendererFlags.SDL_RENDERER_ACCELERATED) raises:
+    fn __init__(inout self, owned window: Window[lif], index: Int = -1, flags: UInt32 = 0) raises:
         self.sdl = window.sdl
-        self._renderer_ptr = self.sdl[]._sdl.create_renderer(window._window_ptr, index, flags)
         self.window = window^
-        self.surface = Surface(self.sdl[])
+        self._renderer_ptr = self.sdl[]._sdl.create_renderer(self.window._window_ptr, index, flags)
 
     fn __init__(inout self, owned surface: Surface[lif]) raises:
         self.sdl = surface.sdl
         self._renderer_ptr = self.sdl[]._sdl.create_software_renderer(surface._surface_ptr)
         self.window = Window(self.sdl[])
-        self.surface = surface^
 
     fn __moveinit__(inout self, owned other: Self):
         self.sdl = other.sdl
         self._renderer_ptr = other._renderer_ptr
         self.window = other.window^
-        self.surface = other.surface^
 
     fn __del__(owned self):
         self.sdl[]._sdl.destroy_renderer(self._renderer_ptr)
@@ -46,9 +42,13 @@ struct Renderer[lif: AnyLifetime[False].type]:
     fn copy[type: DType = DType.int32](self, texture: Texture, src: Optional[Rect], dst: DRect[type]) raises:
         @parameter
         if type.is_integral():
-            self.sdl[]._sdl.render_copy(self._renderer_ptr, texture._texture_ptr, opt2ptr(src), adr(dst.cast[DType.int32]()))
+            var _dst = dst.cast[DType.int32]()
+            self.sdl[]._sdl.render_copy(self._renderer_ptr, texture._texture_ptr, opt2ptr(src), adr(_dst))
+            _ = _dst
         elif type.is_floating_point():
-            self.sdl[]._sdl.render_copy_f(self._renderer_ptr, texture._texture_ptr, opt2ptr(src), adr(dst.cast[DType.float32]()))
+            var _dst = dst.cast[DType.float32]()
+            self.sdl[]._sdl.render_copy_f(self._renderer_ptr, texture._texture_ptr, opt2ptr(src), adr(_dst))
+            _ = _dst
 
     fn copy(
         self,
@@ -254,10 +254,11 @@ struct RendererFlip:
 
 
 @value
+@register_passable("trivial")
 struct RendererInfo:
-    var name: String
+    var name: Ptr[CharC]
     var flags: UInt32
     var num_texture_formats: UInt32
     var texture_formats: SIMD[DType.uint32, 16]
-    var max_texture_width: Int
-    var max_texture_height: Int
+    var max_texture_width: IntC
+    var max_texture_height: IntC

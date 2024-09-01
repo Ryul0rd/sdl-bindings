@@ -259,6 +259,8 @@ struct _SDL:
     var _get_renderer_info: SDL_Fn["SDL_GetRendererInfo", fn (Ptr[_Renderer], Ptr[RendererInfo]) -> IntC]
     var _get_renderer_output_size: SDL_Fn["SDL_GetRendererOutputSize", fn (Ptr[_Renderer], Ptr[IntC], Ptr[IntC]) -> IntC]
     var _get_render_target: SDL_Fn["SDL_GetRenderTarget", fn (Ptr[_Renderer]) -> Ptr[_Texture]]
+    var _get_num_render_drivers: SDL_Fn["SDL_GetNumRenderDrivers", fn () -> IntC]
+    var _get_render_driver_info: SDL_Fn["SDL_GetRenderDriverInfo", fn (IntC, Ptr[RendererInfo]) -> IntC]
     var _render_copy: SDL_Fn["SDL_RenderCopy", fn (Ptr[_Renderer], Ptr[_Texture], Ptr[Rect], Ptr[Rect]) -> IntC]
     var _render_copy_f: SDL_Fn["SDL_RenderCopyF", fn (Ptr[_Renderer], Ptr[_Texture], Ptr[Rect], Ptr[FRect]) -> IntC]
     var _render_copy_ex: SDL_Fn["SDL_RenderCopyEx", fn (Ptr[_Renderer], Ptr[_Texture], Ptr[Rect], Ptr[Rect], Float64, Ptr[Point], RendererFlip) -> IntC]
@@ -483,6 +485,8 @@ struct _SDL:
         self._get_renderer_info = self._handle
         self._get_renderer_output_size = self._handle
         self._get_render_target = self._handle
+        self._get_num_render_drivers = self._handle
+        self._get_render_driver_info = self._handle
         self._render_copy = self._handle
         self._render_copy_f = self._handle
         self._render_copy_ex = self._handle
@@ -715,8 +719,17 @@ struct _SDL:
     # var _get_surface_alpha_mod: SDL_Fn["SDL_GetSurfaceAlphaMod", fn (Ptr[_Surface], Ptr[UInt8]) -> IntC]
     # var _get_surface_blend_mode: SDL_Fn["SDL_GetSurfaceBlendMode", fn (Ptr[_Surface], Ptr[BlendMode]) -> IntC]
     # var _has_surface_rle: SDL_Fn["SDL_HasSurfaceRLE", fn (Ptr[_Surface]) -> BoolC]
-    # var _lock_surface: SDL_Fn["SDL_LockSurface", fn (Ptr[_Surface]) -> IntC]
-    # var _unlock_surface: SDL_Fn["SDL_UnlockSurface", fn (Ptr[_Surface]) -> NoneType]
+
+    @always_inline
+    fn lock_surface(self, surface: Ptr[_Surface]) raises:
+        """Set up a surface for directly accessing the pixels."""
+        self.error.if_code(self._lock_surface.call(surface), "Could not lock surface")
+
+    @always_inline
+    fn unlock_surface(self, surface: Ptr[_Surface]):
+        """Release a surface after directly accessing the pixels."""
+        self._unlock_surface.call(surface)
+
     # var _set_surface_color_mod: SDL_Fn["SDL_SetSurfaceColorMod", fn(Ptr[_Surface], UInt8, UInt8, UInt8) -> IntC]
     # var _set_surface_alpha_mod: SDL_Fn["SDL_SetSurfaceAlphaMod", fn (Ptr[_Surface], UInt8) -> IntC]
     # var _set_surface_blend_mode: SDL_Fn["SDL_SetSurfaceBlendMode", fn (Ptr[_Surface], BlendMode) -> IntC]
@@ -808,12 +821,28 @@ struct _SDL:
     @always_inline
     fn get_renderer_output_size(self, renderer: Ptr[_Renderer], w: Ptr[IntC], h: Ptr[IntC]) raises:
         """Get the output size in pixels of a rendering context."""
-        self.error.if_code(self._get_renderer_output_size.call(renderer, w, h), "")
+        self.error.if_code(self._get_renderer_output_size.call(renderer, w, h), "Could not get renderer output size")
 
     @always_inline
-    fn get_render_target(self, renderer: Ptr[_Renderer]) raises -> Ptr[_Texture]:
+    fn get_render_target(self, renderer: Ptr[_Renderer]) -> Ptr[_Texture]:
         """Get the current render target."""
-        return self.error.if_null(self._get_render_target.call(renderer), "Could not get render target")
+        return self._get_render_target.call(renderer)
+
+    @always_inline
+    fn get_num_render_drivers(self) raises -> IntC:
+        """Get the number of 2D rendering drivers available for the current display."""
+        var num_render_drivers = self._get_num_render_drivers.call()
+        if num_render_drivers < 0:
+            raise self.error()
+        return num_render_drivers
+
+    @always_inline
+    fn get_render_driver_info(self, index: IntC) raises -> RendererInfo:
+        """Get info about a specific 2D rendering driver for the current display."""
+        var renderer_info: RendererInfo
+        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(renderer_info))
+        self.error.if_code(self._get_render_driver_info.call(index, Ptr.address_of(renderer_info)), "Could not get render driver info")
+        return renderer_info
 
     @always_inline
     fn render_copy(self, renderer: Ptr[_Renderer], texture: Ptr[_Texture], src_rect: Ptr[Rect], dst_rect: Ptr[Rect]) raises:

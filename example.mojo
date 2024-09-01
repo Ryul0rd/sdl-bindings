@@ -13,10 +13,10 @@ def main():
     var held_keys = SIMD[DType.bool, 512]()
 
     var apple = Surface(sdl, sdl.img.load_image(('assets/apple.png').unsafe_cstr_ptr().bitcast[DType.uint8]()))
-    var rotated_apple = Surface(sdl, sdl.gfx.rotozoom_surface(apple, 90, 1, True))
+    var rotated_apple = apple.rotozoomed(90, 1, True)
     var font = ttf.Font(sdl, "assets/Beef'd.ttf", 24)
     var hello = font.render_solid('Hello, World!', Color(255, 0, 255, 255))
-    hello.convert(window.surface)
+    hello.convert(window.get_surface())
 
     var test_sound = mix.MixMusic(sdl.mix, 'assets/audio/error_003.ogg')
 
@@ -48,13 +48,13 @@ def main():
         if held_keys[Keys.d]:
             player_box.x += int(player_speed * clock.delta_time)
 
-        window.surface.fill(background_color)
-        window.surface.fill(player_color, player_box)
+        window.get_surface().fill(background_color)
+        window.get_surface().fill(player_color, player_box)
 
         var green = Surface(sdl, 100, 100, Color(0, 255, 0))
-        window.surface.blit(green, None, Rect(200, 200, 30, 30))
-        window.surface.blit(rotated_apple, None, Rect(300, 300, 30, 30))
-        window.surface.blit(hello, None, Rect(300, 100, 300, 44))
+        window.get_surface().blit(green, None, Rect(200, 200, 30, 30))
+        window.get_surface().blit(rotated_apple, None, Rect(300, 300, 30, 30))
+        window.get_surface().blit(hello, None, Rect(300, 100, 300, 44))
 
         window.update_surface()
         clock.tick()

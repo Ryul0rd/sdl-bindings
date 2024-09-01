@@ -23,7 +23,6 @@ struct Window[lif: AnyLifetime[False].type]:
     """A higher level wrapper around an SDL_Window."""
     var sdl: Reference[SDL, lif]
     var _window_ptr: Ptr[_Window]
-    var surface: Surface[lif]
 
     fn __init__(
         inout self,
@@ -71,29 +70,32 @@ struct Window[lif: AnyLifetime[False].type]:
         flags |= WindowFlags.ALLOW_HIGHDPI * allow_highdpi
 
         self._window_ptr = self.sdl[]._sdl.create_window(name.unsafe_cstr_ptr().bitcast[DType.uint8](), x, y, width, height, flags)
-        self.surface = Surface(self.sdl[], self.sdl[]._sdl.get_window_surface(self._window_ptr))
-        self.surface._surface_ptr[].refcount += 1
 
     fn __init__(inout self, ref[lif]sdl: SDL, _window_ptr: Ptr[_Window] = Ptr[_Window]()):
         self.sdl = sdl
         self._window_ptr = _window_ptr
-        self.surface = Surface(sdl)
 
     fn __moveinit__(inout self, owned other: Self):
         self.sdl = other.sdl
         self._window_ptr = other._window_ptr
-        self.surface = other.surface^
 
     fn __del__(owned self):
         self.sdl[]._sdl.destroy_window(self._window_ptr)
 
     fn set_fullscreen(inout self, flags: UInt32) raises:
         self.sdl[]._sdl.set_window_fullscreen(self._window_ptr, flags)
-        self.surface = Surface(self.sdl[], self.sdl[]._sdl.get_window_surface(self._window_ptr))
-        self.surface._surface_ptr[].refcount += 1
+
+    fn get_surface(inout self) raises -> Surface[lif]:
+        var surface = Surface(self.sdl[], self.sdl[]._sdl.get_window_surface(self._window_ptr))
+        surface._surface_ptr[].refcount += 1
+        return surface^
 
     fn update_surface(self) raises:
         self.sdl[]._sdl.update_window_surface(self._window_ptr)
+
+    fn destroy_surface(inout self) raises:
+        self.sdl[]._sdl.destroy_window_surface(self._window_ptr)
+        
 
 
 @register_passable("trivial")
