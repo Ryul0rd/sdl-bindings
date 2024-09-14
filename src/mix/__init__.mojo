@@ -25,7 +25,7 @@ struct _MIX:
 
     fn __init__[init: Bool](inout self, error: SDL_Error):
         self._initialized = True
-        self._handle = DLHandle("/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so.0")
+        self._handle = DLHandle(".magic/envs/default/lib/libSDL2_mixer.so")
         self.error = error
         self._open_audio = self._handle
         self._close_audio = self._handle

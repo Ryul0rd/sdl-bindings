@@ -63,6 +63,8 @@ struct SDL:
         else:
             self.mix = None
 
+        # self.mix = None
+
         if ttf:
             self.ttf = _TTF(self._sdl.error)
         else:
@@ -333,22 +335,7 @@ struct _SDL:
 
     fn __init__(inout self) raises:
         # x--- initialize sdl bindings
-        if info.os_is_linux():
-            if Path("/lib/x86_64-linux-gnu/libSDL2-2.0.so").exists():
-                self._handle = DLHandle("/lib/x86_64-linux-gnu/libSDL2-2.0.so")
-            elif Path("/lib/x86_64-linux-gnu/libSDL2-2.0.so.0").exists():
-                self._handle = DLHandle("/lib/x86_64-linux-gnu/libSDL2-2.0.so.0")
-            else:
-                raise "Could not find SDL"
-        elif info.os_is_macos():
-            if Path("/opt/homebrew/lib/libSDL2.dylib").exists():
-                self._handle = DLHandle("/opt/homebrew/lib/libSDL2.dylib")
-            elif Path("/opt/homebrew/Cellar/sdl2/2.30.6/lib/libSDL2.dylib").exists():
-                self._handle = DLHandle("/opt/homebrew/Cellar/sdl2/2.30.6/lib/libSDL2.dylib") 
-            else:
-                raise "Could not find SDL"
-        else:
-            raise "Unknown OS"
+        self._handle = DLHandle(".magic/envs/default/lib/libSDL2.so")
         
         self._init = self._handle
         self._quit = self._handle
