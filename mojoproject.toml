@@ -1,0 +1,19 @@
+[project]
+authors = ["helehex <helehex@gmail.com>"]
+channels = ["conda-forge", "https://conda.modular.com/max"]
+description = "SDL bindings and wrappers for use in Mojo"
+name = "sdl-bindings"
+platforms = ["linux-64", "osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+build = "mojo package src -o sdl.mojopkg"
+test = "mojo example.mojo"
+
+[dependencies]
+max = "*"
+sdl2 = ">=2.30.7,<3"
+sdl2_gfx = ">=1.0.4,<2"
+sdl2_image = ">=2.8.2,<3"
+sdl2_mixer = ">=2.6.3,<3"
+sdl2_ttf = ">=2.22.0,<3"

@@ -24,7 +24,7 @@ struct _TTF:
 
     fn __init__[init: Bool](inout self, error: SDL_Error):
         self._initialized = True
-        self._handle = DLHandle("/lib/x86_64-linux-gnu/libSDL2_ttf-2.0.so.0")
+        self._handle = DLHandle(".magic/envs/default/lib/libSDL2_ttf.so")
         self.error = error
         self._ttf_init = self._handle
         self._ttf_quit = self._handle

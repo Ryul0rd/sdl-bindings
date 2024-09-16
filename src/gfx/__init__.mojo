@@ -18,7 +18,7 @@ struct _GFX:
         __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(self))
 
     fn __init__(inout self, error: SDL_Error):
-        self._handle = DLHandle("/lib/x86_64-linux-gnu/libSDL2_gfx-1.0.so.0")
+        self._handle = DLHandle(".magic/envs/default/lib/libSDL2_gfx.so")
         self.error = error
         self._rotozoom_surface = self._handle
         self._circle_color = self._handle

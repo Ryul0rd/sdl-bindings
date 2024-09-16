@@ -7,7 +7,8 @@ def main():
     alias screen_width = 640
     alias screen_height = 480
 
-    var sdl = SDL(video=True, audio=True, timer=True, events=True, gfx=True, img=True, mix=True, ttf=True)
+    # mix breaks on wsl
+    var sdl = SDL(video=True, audio=True, timer=True, events=True, gfx=True, img=True, mix=False, ttf=True)
     var window = Window(sdl, 'SDL Test', screen_width, screen_height)
     var clock = Clock(sdl, target_fps=60)
     var held_keys = SIMD[DType.bool, 512]()
@@ -18,7 +19,7 @@ def main():
     var hello = font.render_solid('Hello, World!', Color(255, 0, 255, 255))
     hello.convert(window.get_surface())
 
-    var test_sound = mix.MixMusic(sdl.mix, 'assets/audio/error_003.ogg')
+    # var test_sound = mix.MixMusic(sdl.mix, 'assets/audio/error_003.ogg')
 
     var player_color = Color(255, 0, 0, 255)
     var background_color = Color(255, 255, 255, 255)
@@ -33,8 +34,8 @@ def main():
             elif event[].isa[KeyDownEvent]():
                 var e = event[][KeyDownEvent]
                 held_keys[int(e.key)] = True
-                if e.key == Keys.space:
-                    test_sound.play(1)
+                # if e.key == Keys.space:
+                #     test_sound.play(1)
             elif event[].isa[KeyUpEvent]():
                 var e = event[][KeyUpEvent]
                 held_keys[int(e.key)] = False

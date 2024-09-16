@@ -221,6 +221,7 @@ struct EventType:
 
 alias Event = Variant[
     QuitEvent,
+    DisplayEvent,
     WindowEvent,
     KeyDownEvent,
     KeyUpEvent,
@@ -263,6 +264,8 @@ struct _Event:
     fn to_event(_event: Ptr[_Event]) -> Event:
         if _event[].type == EventType.QUIT:
             return _event.bitcast[QuitEvent]()[]
+        elif _event[].type == EventType.DISPLAYEVENT:
+            return _event.bitcast[DisplayEvent]()[]
         elif _event[].type == EventType.WINDOWEVENT:
             return _event.bitcast[WindowEvent]()[]
         elif _event[].type == EventType.KEYDOWN:
@@ -293,6 +296,24 @@ struct _Event:
 struct QuitEvent:
     var _type: UInt32
     var timestamp: UInt32
+
+
+@value
+@register_passable("trivial")
+struct DisplayEvent:
+    var type: UInt32
+    """SDL_DISPLAYEVENT."""
+    var timestamp: UInt32
+    """In milliseconds, populated using SDL_GetTicks()."""
+    var display: UInt32
+    """The associated display index."""
+    var event: UInt8
+    """SDL_DisplayEventID."""
+    var padding1: UInt8
+    var padding2: UInt8
+    var padding3: UInt8
+    var data1: Int32
+    """Event dependent data."""
 
 
 @value
