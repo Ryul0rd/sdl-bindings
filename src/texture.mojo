@@ -10,19 +10,32 @@ struct Texture:
     var _texture_ptr: Ptr[_Texture]
     var _rc: UnsafePointer[Int]
 
-    fn __init__(inout self, renderer: Renderer, format: UInt32, access: Int, w: Int, h: Int) raises:
+    fn __init__(
+        inout self,
+        renderer: Renderer,
+        format: UInt32,
+        access: Int,
+        w: Int,
+        h: Int,
+    ) raises:
         self.sdl = adr(renderer.sdl[])
-        self._texture_ptr = self.sdl[]._sdl.create_texture(renderer._renderer_ptr, format, access, w, h)
+        self._texture_ptr = self.sdl[]._sdl.create_texture(
+            renderer._renderer_ptr, format, access, w, h
+        )
         self._rc = UnsafePointer[Int].alloc(1)
         self._rc[] = 0
 
     fn __init__(inout self, renderer: Renderer, surface: Surface) raises:
         self.sdl = adr(renderer.sdl[])
-        self._texture_ptr = self.sdl[]._sdl.create_texture_from_surface(renderer._renderer_ptr, surface._surface_ptr)
+        self._texture_ptr = self.sdl[]._sdl.create_texture_from_surface(
+            renderer._renderer_ptr, surface._surface_ptr
+        )
         self._rc = UnsafePointer[Int].alloc(1)
         self._rc[] = 0
 
-    fn __init__(inout self, sdl: SDL, texture_ptr: Ptr[_Texture] = Ptr[_Texture]()) raises:
+    fn __init__(
+        inout self, sdl: SDL, texture_ptr: Ptr[_Texture] = Ptr[_Texture]()
+    ) raises:
         self.sdl = adr(sdl)
         self._texture_ptr = texture_ptr
         self._rc = UnsafePointer[Int].alloc(1)
@@ -48,9 +61,15 @@ struct Texture:
     fn lock(self, rect: Optional[Rect] = None) raises -> Pixels:
         var pixels_ptr: Ptr[NoneType]
         var pixels_pitch: IntC
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(pixels_ptr))
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(pixels_pitch))
-        self.sdl[]._sdl.lock_texture(self._texture_ptr, opt2ptr(rect), adr(pixels_ptr), adr(pixels_pitch))
+        __mlir_op.`lit.ownership.mark_initialized`(
+            __get_mvalue_as_litref(pixels_ptr)
+        )
+        __mlir_op.`lit.ownership.mark_initialized`(
+            __get_mvalue_as_litref(pixels_pitch)
+        )
+        self.sdl[]._sdl.lock_texture(
+            self._texture_ptr, opt2ptr(rect), adr(pixels_ptr), adr(pixels_pitch)
+        )
         return Pixels(pixels_ptr, pixels_pitch)
 
     fn unlock(self):
@@ -63,11 +82,15 @@ struct Texture:
         __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(r))
         __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(g))
         __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(b))
-        self.sdl[]._sdl.get_texture_color_mod(self._texture_ptr, adr(r), adr(g), adr(b))
+        self.sdl[]._sdl.get_texture_color_mod(
+            self._texture_ptr, adr(r), adr(g), adr(b)
+        )
         return r, g, b
 
     fn set_color_mod(self, color: Color) raises:
-        self.sdl[]._sdl.set_texture_color_mod(self._texture_ptr, color.r, color.g, color.b)
+        self.sdl[]._sdl.set_texture_color_mod(
+            self._texture_ptr, color.r, color.g, color.b
+        )
 
     fn get_alpha_mod(self) raises -> UInt8:
         var a: UInt8
@@ -80,8 +103,12 @@ struct Texture:
 
     fn get_blend_mode(self) raises -> BlendMode:
         var blend_mode: BlendMode
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(blend_mode))
-        self.sdl[]._sdl.get_texture_blend_mode(self._texture_ptr, adr(blend_mode))
+        __mlir_op.`lit.ownership.mark_initialized`(
+            __get_mvalue_as_litref(blend_mode)
+        )
+        self.sdl[]._sdl.get_texture_blend_mode(
+            self._texture_ptr, adr(blend_mode)
+        )
         return blend_mode
 
     fn set_blend_mode(self, blend_mode: BlendMode) raises:
@@ -89,8 +116,12 @@ struct Texture:
 
     fn get_scale_mode(self) raises -> ScaleMode:
         var scale_mode: ScaleMode
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(scale_mode))
-        self.sdl[]._sdl.get_texture_scale_mode(self._texture_ptr, adr(scale_mode))
+        __mlir_op.`lit.ownership.mark_initialized`(
+            __get_mvalue_as_litref(scale_mode)
+        )
+        self.sdl[]._sdl.get_texture_scale_mode(
+            self._texture_ptr, adr(scale_mode)
+        )
         return scale_mode
 
     fn set_scale_mode(self, scale_mode: ScaleMode) raises:

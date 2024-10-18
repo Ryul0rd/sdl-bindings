@@ -22,7 +22,9 @@ struct _IMG:
     fn __init__[init: Bool](inout self, error: SDL_Error) raises:
         self._initialized = True
         if os_is_macos():
-            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_image.dylib")
+            self._handle = DLHandle(
+                ".magic/envs/default/lib/libSDL2_image.dylib"
+            )
         elif os_is_linux():
             self._handle = DLHandle(".magic/envs/default/lib/libSDL2_image.so")
         else:
@@ -32,7 +34,14 @@ struct _IMG:
         self._img_quit = self._handle
         self._img_load = self._handle
 
-    fn __init__(inout self, error: SDL_Error, jpeg: Bool = True, png: Bool = True, tif: Bool = False, webp: Bool = False) raises:
+    fn __init__(
+        inout self,
+        error: SDL_Error,
+        jpeg: Bool = True,
+        png: Bool = True,
+        tif: Bool = False,
+        webp: Bool = False,
+    ) raises:
         self.__init__[False](error)
         var flags: Int32 = 0
         flags |= 0x00000001 * jpeg
@@ -56,4 +65,6 @@ struct _IMG:
 
     @always_inline
     fn load_image(self, file: Ptr[CharC]) raises -> Ptr[_Surface]:
-        return self.error.if_null(self._img_load.call(file), "Could not load image")
+        return self.error.if_null(
+            self._img_load.call(file), "Could not load image"
+        )

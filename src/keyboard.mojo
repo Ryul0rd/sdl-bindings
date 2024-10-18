@@ -8,7 +8,7 @@ struct Keyboard[lif: AnyLifetime[False].type]:
     var sdl: Reference[SDL, lif]
     var state: Ptr[UInt8]
 
-    fn __init__(inout self, ref[lif]sdl: SDL):
+    fn __init__(inout self, ref [lif]sdl: SDL):
         self.sdl = sdl
         var numkeys = IntC()
         self.state = sdl._sdl.get_keyboard_state(adr(numkeys))
@@ -93,7 +93,6 @@ struct Keys:
 @value
 @register_passable("trivial")
 struct KeyCode:
-
     var value: IntC
 
     alias UNKNOWN = 0

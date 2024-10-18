@@ -280,11 +280,17 @@ struct _Event:
             return _event.bitcast[KeyMapChangedEvent]()[]
         elif _event[].type == EventType.MOUSEMOTION:
             return _event.bitcast[MouseMotionEvent]()[]
-        elif _event[].type == EventType.MOUSEBUTTONDOWN or _event[].type == EventType.MOUSEBUTTONUP:
+        elif (
+            _event[].type == EventType.MOUSEBUTTONDOWN
+            or _event[].type == EventType.MOUSEBUTTONUP
+        ):
             return _event.bitcast[MouseButtonEvent]()[]
         elif _event[].type == EventType.MOUSEWHEEL:
             return _event.bitcast[MouseWheelEvent]()[]
-        elif _event[].type == EventType.AUDIODEVICEADDED or _event[].type == EventType.AUDIODEVICEREMOVED:
+        elif (
+            _event[].type == EventType.AUDIODEVICEADDED
+            or _event[].type == EventType.AUDIODEVICEREMOVED
+        ):
             return _event.bitcast[AudioDeviceEvent]()[]
         else:
             print("Unhandled event type: " + str(_event[].type))
@@ -484,6 +490,7 @@ struct MouseButtonEvent:
 @register_passable("trivial")
 struct MouseWheelEvent:
     """Mouse wheel event structure (event.wheel.*)."""
+
     var type: UInt32
     """SDL_MOUSEWHEEL."""
     var timestamp: UInt32
@@ -515,9 +522,6 @@ struct AudioDeviceEvent:
     var timestamp: UInt32
     var which: UInt32
     var iscapture: UInt8
-
-
-
 
 
 # # var _peep_events = _sdl.get_function[fn(Ptr[C_Event], Int32, UInt8, UInt32, UInt32) -> Int32]('SDL_PeepEvents')
