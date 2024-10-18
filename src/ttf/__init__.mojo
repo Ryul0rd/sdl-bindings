@@ -4,6 +4,7 @@ from sys.ffi import DLHandle
 from .._sdl import SDL_Fn
 from ..surface import _Surface
 from .font import Font, _Font
+from sys.info import os_is_macos, os_is_linux
 
 
 struct _TTF:
@@ -22,9 +23,14 @@ struct _TTF:
         self._initialized = False
         __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(self))
 
-    fn __init__[init: Bool](inout self, error: SDL_Error):
+    fn __init__[init: Bool](inout self, error: SDL_Error) raises:
         self._initialized = True
-        self._handle = DLHandle(".magic/envs/default/lib/libSDL2_ttf.so")
+        if os_is_macos():
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_ttf.dylib")
+        elif os_is_linux():
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_ttf.so")
+        else:
+            raise Error("Unsupported OS")
         self.error = error
         self._ttf_init = self._handle
         self._ttf_quit = self._handle

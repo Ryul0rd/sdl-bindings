@@ -4,7 +4,7 @@ from sys.ffi import DLHandle
 from .._sdl import SDL_Fn
 from ..surface import _Surface
 from ..render import _Renderer
-
+from sys.info import os_is_macos, os_is_linux
 
 struct _GFX:
     var _handle: DLHandle
@@ -17,8 +17,13 @@ struct _GFX:
     fn __init__(inout self, none: NoneType):
         __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(self))
 
-    fn __init__(inout self, error: SDL_Error):
-        self._handle = DLHandle(".magic/envs/default/lib/libSDL2_gfx.so")
+    fn __init__(inout self, error: SDL_Error) raises:
+        if os_is_macos():
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_gfx.dylib")
+        elif os_is_linux():
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_gfx.so")
+        else:
+            raise Error("Unsupported OS")
         self.error = error
         self._rotozoom_surface = self._handle
         self._circle_color = self._handle

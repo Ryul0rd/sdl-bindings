@@ -3,6 +3,7 @@
 from sys.ffi import DLHandle
 from .._sdl import SDL_Fn
 from .sound import MixChunk, _MixChunk, MixMusic, _MixMusic
+from sys.info import os_is_macos, os_is_linux
 
 
 struct _MIX:
@@ -23,9 +24,14 @@ struct _MIX:
         self._initialized = False
         __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(self))
 
-    fn __init__[init: Bool](inout self, error: SDL_Error):
+    fn __init__[init: Bool](inout self, error: SDL_Error) raises:
         self._initialized = True
-        self._handle = DLHandle(".magic/envs/default/lib/libSDL2_mixer.so")
+        if os_is_macos():
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_mixer.dylib")
+        elif os_is_linux():
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_mixer.so")
+        else:
+            raise Error("Unsupported OS")
         self.error = error
         self._open_audio = self._handle
         self._close_audio = self._handle

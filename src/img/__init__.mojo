@@ -3,6 +3,7 @@
 from sys.ffi import DLHandle
 from .._sdl import SDL_Fn
 from ..surface import _Surface
+from sys.info import os_is_macos, os_is_linux
 
 
 struct _IMG:
@@ -18,9 +19,14 @@ struct _IMG:
         self._initialized = False
         __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(self))
 
-    fn __init__[init: Bool](inout self, error: SDL_Error):
+    fn __init__[init: Bool](inout self, error: SDL_Error) raises:
         self._initialized = True
-        self._handle = DLHandle(".magic/envs/default/lib/libSDL2_image.so")
+        if os_is_macos():
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_image.dylib")
+        elif os_is_linux():
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_image.so")
+        else:
+            raise Error("Unsupported OS")
         self.error = error
         self._img_init = self._handle
         self._img_quit = self._handle
@@ -51,7 +57,3 @@ struct _IMG:
     @always_inline
     fn load_image(self, file: Ptr[CharC]) raises -> Ptr[_Surface]:
         return self.error.if_null(self._img_load.call(file), "Could not load image")
-
-
-
-

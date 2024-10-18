@@ -12,6 +12,7 @@ from .gfx import _GFX
 from .img import _IMG
 from .mix import _MIX
 from .ttf import _TTF
+from sys.info import os_is_macos, os_is_linux
 
 
 struct SDL:
@@ -335,7 +336,12 @@ struct _SDL:
 
     fn __init__(inout self) raises:
         # x--- initialize sdl bindings
-        self._handle = DLHandle(".magic/envs/default/lib/libSDL2.so")
+        if os_is_macos():
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2.dylib")
+        elif os_is_linux():
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2.so")
+        else:
+            raise Error("Unsupported OS")
         
         self._init = self._handle
         self._quit = self._handle
