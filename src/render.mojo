@@ -19,15 +19,11 @@ struct Renderer[lif: AnyLifetime[False].type]:
     ) raises:
         self.sdl = window.sdl
         self.window = window^
-        self._renderer_ptr = self.sdl[]._sdl.create_renderer(
-            self.window._window_ptr, index, flags
-        )
+        self._renderer_ptr = self.sdl[]._sdl.create_renderer(self.window._window_ptr, index, flags)
 
     fn __init__(inout self, owned surface: Surface[lif]) raises:
         self.sdl = surface.sdl
-        self._renderer_ptr = self.sdl[]._sdl.create_software_renderer(
-            surface._surface_ptr
-        )
+        self._renderer_ptr = self.sdl[]._sdl.create_software_renderer(surface._surface_ptr)
         self.window = Window(self.sdl[])
 
     fn __moveinit__(inout self, owned other: Self):
@@ -41,9 +37,7 @@ struct Renderer[lif: AnyLifetime[False].type]:
     fn clear(self) raises:
         self.sdl[]._sdl.render_clear(self._renderer_ptr)
 
-    fn copy[
-        type: DType = DType.int32
-    ](self, texture: Texture, src: Optional[Rect]) raises:
+    fn copy[type: DType = DType.int32](self, texture: Texture, src: Optional[Rect]) raises:
         @parameter
         if type.is_integral():
             self.sdl[]._sdl.render_copy(
@@ -60,9 +54,7 @@ struct Renderer[lif: AnyLifetime[False].type]:
                 Ptr[FRect](),
             )
 
-    fn copy[
-        type: DType = DType.int32
-    ](self, texture: Texture, src: Optional[Rect], dst: DRect[type]) raises:
+    fn copy[type: DType = DType.int32](self, texture: Texture, src: Optional[Rect], dst: DRect[type]) raises:
         @parameter
         if type.is_integral():
             var _dst = dst.cast[DType.int32]()
@@ -128,9 +120,7 @@ struct Renderer[lif: AnyLifetime[False].type]:
         return self.sdl[]._sdl.render_target_supported(self._renderer_ptr)
 
     fn set_target(self, texture: Texture) raises:
-        self.sdl[]._sdl.set_render_target(
-            self._renderer_ptr, texture._texture_ptr
-        )
+        self.sdl[]._sdl.set_render_target(self._renderer_ptr, texture._texture_ptr)
 
     fn reset_target(self) raises:
         self.sdl[]._sdl.set_render_target(self._renderer_ptr, Ptr[_Texture]())
@@ -140,15 +130,11 @@ struct Renderer[lif: AnyLifetime[False].type]:
         return Texture(self.sdl[], texture)
 
     fn set_color(self, color: Color) raises:
-        self.sdl[]._sdl.set_render_draw_color(
-            self._renderer_ptr, color.r, color.g, color.b, color.a
-        )
+        self.sdl[]._sdl.set_render_draw_color(self._renderer_ptr, color.r, color.g, color.b, color.a)
 
     fn get_color(self) raises -> Color:
         var color: Color
-        __mlir_op.`lit.ownership.mark_initialized`(
-            __get_mvalue_as_litref(color)
-        )
+        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(color))
         self.sdl[]._sdl.get_render_draw_color(
             self._renderer_ptr,
             adr(color.r),
@@ -159,21 +145,15 @@ struct Renderer[lif: AnyLifetime[False].type]:
         return color
 
     fn set_blendmode(self, blendmode: BlendMode) raises:
-        self.sdl[]._sdl.set_render_draw_blend_mode(
-            self._renderer_ptr, blendmode
-        )
+        self.sdl[]._sdl.set_render_draw_blend_mode(self._renderer_ptr, blendmode)
 
     fn set_vsync(self, vsync: Int) raises:
         self.sdl[]._sdl.render_set_vsync(self._renderer_ptr, vsync)
 
     fn get_blendmode(self) raises -> BlendMode:
         var blend_mode: BlendMode
-        __mlir_op.`lit.ownership.mark_initialized`(
-            __get_mvalue_as_litref(blend_mode)
-        )
-        self.sdl[]._sdl.get_render_draw_blend_mode(
-            self._renderer_ptr, adr(blend_mode)
-        )
+        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(blend_mode))
+        self.sdl[]._sdl.get_render_draw_blend_mode(self._renderer_ptr, adr(blend_mode))
         return blend_mode
 
     fn get_viewport(self) -> Rect:
@@ -183,9 +163,7 @@ struct Renderer[lif: AnyLifetime[False].type]:
         return rect
 
     fn set_viewport(self, rect: Rect) raises:
-        return self.sdl[]._sdl.render_set_viewport(
-            self._renderer_ptr, adr(rect)
-        )
+        return self.sdl[]._sdl.render_set_viewport(self._renderer_ptr, adr(rect))
 
     fn get_info(self) raises -> RendererInfo:
         var info: RendererInfo
@@ -198,19 +176,13 @@ struct Renderer[lif: AnyLifetime[False].type]:
         var h: IntC
         __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(w))
         __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(h))
-        self.sdl[]._sdl.get_renderer_output_size(
-            self._renderer_ptr, adr(w), adr(h)
-        )
+        self.sdl[]._sdl.get_renderer_output_size(self._renderer_ptr, adr(w), adr(h))
         return int(w), int(h)
 
-    fn draw_point[
-        type: DType = DType.float32
-    ](self, x: Scalar[type], y: Scalar[type]) raises:
+    fn draw_point[type: DType = DType.float32](self, x: Scalar[type], y: Scalar[type]) raises:
         @parameter
         if type.is_integral():
-            self.sdl[]._sdl.render_draw_point(
-                self._renderer_ptr, x.cast[DType.int32](), y.cast[DType.int32]()
-            )
+            self.sdl[]._sdl.render_draw_point(self._renderer_ptr, x.cast[DType.int32](), y.cast[DType.int32]())
         elif type.is_floating_point():
             self.sdl[]._sdl.render_draw_point_f(
                 self._renderer_ptr,
@@ -219,24 +191,14 @@ struct Renderer[lif: AnyLifetime[False].type]:
             )
 
     fn draw_points(self, points: List[Point]) raises:
-        self.sdl[]._sdl.render_draw_points(
-            self._renderer_ptr, points.unsafe_ptr(), len(points)
-        )
+        self.sdl[]._sdl.render_draw_points(self._renderer_ptr, points.unsafe_ptr(), len(points))
 
     fn draw_points(self, points: List[FPoint]) raises:
-        self.sdl[]._sdl.render_draw_points_f(
-            self._renderer_ptr, points.unsafe_ptr(), len(points)
-        )
+        self.sdl[]._sdl.render_draw_points_f(self._renderer_ptr, points.unsafe_ptr(), len(points))
 
     fn draw_line[
         type: DType = DType.float32
-    ](
-        self,
-        x1: Scalar[type],
-        y1: Scalar[type],
-        x2: Scalar[type],
-        y2: Scalar[type],
-    ) raises:
+    ](self, x1: Scalar[type], y1: Scalar[type], x2: Scalar[type], y2: Scalar[type],) raises:
         @parameter
         if type.is_integral():
             self.sdl[]._sdl.render_draw_line(
@@ -256,18 +218,12 @@ struct Renderer[lif: AnyLifetime[False].type]:
             )
 
     fn draw_lines(self, points: List[Point]) raises:
-        self.sdl[]._sdl.render_draw_lines(
-            self._renderer_ptr, points.unsafe_ptr(), len(points)
-        )
+        self.sdl[]._sdl.render_draw_lines(self._renderer_ptr, points.unsafe_ptr(), len(points))
 
     fn draw_lines(self, points: List[FPoint]) raises:
-        self.sdl[]._sdl.render_draw_lines_f(
-            self._renderer_ptr, points.unsafe_ptr(), len(points)
-        )
+        self.sdl[]._sdl.render_draw_lines_f(self._renderer_ptr, points.unsafe_ptr(), len(points))
 
-    fn draw_circle[
-        type: DType = DType.float32
-    ](self, center: DPoint[type], radius: Scalar) raises:
+    fn draw_circle[type: DType = DType.float32](self, center: DPoint[type], radius: Scalar) raises:
         self.sdl[].gfx.circle_color(
             self._renderer_ptr,
             center.x.cast[DType.int16](),
@@ -279,48 +235,30 @@ struct Renderer[lif: AnyLifetime[False].type]:
     fn draw_rect[type: DType = DType.float32](self, rect: DRect[type]) raises:
         @parameter
         if type.is_integral():
-            self.sdl[]._sdl.render_draw_rect(
-                self._renderer_ptr, rect.cast[DType.int32]()
-            )
+            self.sdl[]._sdl.render_draw_rect(self._renderer_ptr, rect.cast[DType.int32]())
         if type.is_floating_point():
-            self.sdl[]._sdl.render_draw_rect_f(
-                self._renderer_ptr, rect.cast[DType.float32]()
-            )
+            self.sdl[]._sdl.render_draw_rect_f(self._renderer_ptr, rect.cast[DType.float32]())
 
     fn draw_rects(self, rects: List[Rect]) raises:
-        self.sdl[]._sdl.render_draw_rects(
-            self._renderer_ptr, rects.unsafe_ptr(), len(rects)
-        )
+        self.sdl[]._sdl.render_draw_rects(self._renderer_ptr, rects.unsafe_ptr(), len(rects))
 
     fn draw_rects(self, rects: List[FRect]) raises:
-        self.sdl[]._sdl.render_draw_rects_f(
-            self._renderer_ptr, rects.unsafe_ptr(), len(rects)
-        )
+        self.sdl[]._sdl.render_draw_rects_f(self._renderer_ptr, rects.unsafe_ptr(), len(rects))
 
     fn fill_rect[type: DType = DType.float32](self, rect: DRect[type]) raises:
         @parameter
         if type.is_integral():
-            self.sdl[]._sdl.render_fill_rect(
-                self._renderer_ptr, rect.cast[DType.int32]()
-            )
+            self.sdl[]._sdl.render_fill_rect(self._renderer_ptr, rect.cast[DType.int32]())
         if type.is_floating_point():
-            self.sdl[]._sdl.render_fill_rect_f(
-                self._renderer_ptr, rect.cast[DType.float32]()
-            )
+            self.sdl[]._sdl.render_fill_rect_f(self._renderer_ptr, rect.cast[DType.float32]())
 
     fn fill_rects(self, rects: List[Rect]) raises:
-        self.sdl[]._sdl.render_fill_rects(
-            self._renderer_ptr, rects.unsafe_ptr(), len(rects)
-        )
+        self.sdl[]._sdl.render_fill_rects(self._renderer_ptr, rects.unsafe_ptr(), len(rects))
 
     fn fill_rects(self, rects: List[FRect]) raises:
-        self.sdl[]._sdl.render_fill_rects_f(
-            self._renderer_ptr, rects.unsafe_ptr(), len(rects)
-        )
+        self.sdl[]._sdl.render_fill_rects_f(self._renderer_ptr, rects.unsafe_ptr(), len(rects))
 
-    fn render_geometry(
-        self, texture: Texture, vertices: List[Vertex], indices: List[IntC]
-    ) raises:
+    fn render_geometry(self, texture: Texture, vertices: List[Vertex], indices: List[IntC]) raises:
         self.sdl[]._sdl.render_geometry(
             self._renderer_ptr,
             texture._texture_ptr,

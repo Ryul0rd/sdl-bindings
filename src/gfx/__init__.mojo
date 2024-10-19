@@ -7,15 +7,14 @@ from ..render import _Renderer
 from sys.info import os_is_macos, os_is_linux
 from builtin.constrained import constrained
 
+
 struct _GFX:
     var _handle: DLHandle
     var error: SDL_Error
 
     var _rotozoom_surface: SDL_Fn[
         "rotozoomSurface",
-        fn (
-            UnsafePointer[_Surface], Float64, Float64, Int32
-        ) -> UnsafePointer[_Surface],
+        fn (UnsafePointer[_Surface], Float64, Float64, Int32) -> UnsafePointer[_Surface],
     ]
     var _circle_color: SDL_Fn[
         "circleColor",
@@ -40,17 +39,19 @@ struct _GFX:
 
     fn __init__(inout self, error: SDL_Error):
         constrained[os_is_linux() or os_is_macos(), "OS is not supported"]()
+
         @parameter
-        self._handle = DLHandle(".magic/envs/default/lib/libSDL2_gfx.dylib") if os_is_macos() else DLHandle(".magic/envs/default/lib/libSDL2_gfx.so")
+        if os_is_macos():
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_gfx.dylib")
+        else:
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_gfx.so")
         self.error = error
         self._rotozoom_surface = self._handle
         self._circle_color = self._handle
         self._circle_rgba = self._handle
 
     @always_inline
-    fn rotozoom_surface(
-        self, source: Ptr[_Surface], angle: Float64, zoom: Float64, smooth: Bool
-    ) -> Ptr[_Surface]:
+    fn rotozoom_surface(self, source: Ptr[_Surface], angle: Float64, zoom: Float64, smooth: Bool) -> Ptr[_Surface]:
         return self._rotozoom_surface.call(source, angle, zoom, Int32(smooth))
 
     @always_inline

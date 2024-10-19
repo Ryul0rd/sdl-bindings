@@ -45,9 +45,7 @@ struct MixMusic[lif: AnyLifetime[False].type]:
 
     fn __init__(inout self, ref [lif]mix: _MIX, path: String) raises:
         self.mix = mix
-        self._mixmusic_ptr = mix.load_music(
-            path.unsafe_cstr_ptr().bitcast[DType.uint8]()
-        )
+        self._mixmusic_ptr = mix.load_music(path.unsafe_cstr_ptr().bitcast[DType.uint8]())
 
     fn __init__(inout self, ref [lif]mix: _MIX, _mixmusic_ptr: Ptr[_MixMusic]):
         self.mix = mix

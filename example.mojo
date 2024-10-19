@@ -24,9 +24,7 @@ def main():
 
     var apple = Surface(
         sdl,
-        sdl.img.load_image(
-            ("assets/apple.png").unsafe_cstr_ptr().bitcast[DType.uint8]()
-        ),
+        sdl.img.load_image(("assets/apple.png").unsafe_cstr_ptr().bitcast[DType.uint8]()),
     )
     var rotated_apple = apple.rotozoomed(90, 1, True)
     var font = ttf.Font(sdl, "assets/Beef'd.ttf", 24)

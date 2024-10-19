@@ -23,9 +23,7 @@ struct SDL_Error:
     fn __call__(self) -> Error:
         @parameter
         if error_level == 2:
-            return String.format_sequence(
-                "SDL_Error: ", String(self._get_error.call())
-            )
+            return String.format_sequence("SDL_Error: ", String(self._get_error.call()))
         else:
             return "SDL_Error"
 
@@ -33,9 +31,7 @@ struct SDL_Error:
     fn __call__(self, msg: StringLiteral) -> Error:
         @parameter
         if error_level == 2:
-            return String.format_sequence(
-                "SDL_Error: ", msg, ", ", String(self._get_error.call())
-            )
+            return String.format_sequence("SDL_Error: ", msg, ", ", String(self._get_error.call()))
         else:
             return String.format_sequence("SDL_Error: ", msg)
 

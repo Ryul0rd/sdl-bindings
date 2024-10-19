@@ -54,12 +54,8 @@ struct Window[lif: AnyLifetime[False].type]:
             raise Error("Expected only one of `xpos` or `xcenter` but got both")
         if ypos and ycenter:
             raise Error("Expected only one of `ypos` or `ycenter` but got both")
-        var x = xpos.or_else(
-            WINDOWPOS_CENTERED if xcenter else WINDOWPOS_UNDEFINED
-        )
-        var y = ypos.or_else(
-            WINDOWPOS_CENTERED if ycenter else WINDOWPOS_UNDEFINED
-        )
+        var x = xpos.or_else(WINDOWPOS_CENTERED if xcenter else WINDOWPOS_UNDEFINED)
+        var y = ypos.or_else(WINDOWPOS_CENTERED if ycenter else WINDOWPOS_UNDEFINED)
 
         # set window flags
         var flags: UInt32 = 0
@@ -102,9 +98,7 @@ struct Window[lif: AnyLifetime[False].type]:
         self.sdl[]._sdl.set_window_fullscreen(self._window_ptr, flags)
 
     fn get_surface(inout self) raises -> Surface[lif]:
-        var surface = Surface(
-            self.sdl[], self.sdl[]._sdl.get_window_surface(self._window_ptr)
-        )
+        var surface = Surface(self.sdl[], self.sdl[]._sdl.get_window_surface(self._window_ptr))
         surface._surface_ptr[].refcount += 1
         return surface^
 

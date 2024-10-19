@@ -280,17 +280,11 @@ struct _Event:
             return _event.bitcast[KeyMapChangedEvent]()[]
         elif _event[].type == EventType.MOUSEMOTION:
             return _event.bitcast[MouseMotionEvent]()[]
-        elif (
-            _event[].type == EventType.MOUSEBUTTONDOWN
-            or _event[].type == EventType.MOUSEBUTTONUP
-        ):
+        elif _event[].type == EventType.MOUSEBUTTONDOWN or _event[].type == EventType.MOUSEBUTTONUP:
             return _event.bitcast[MouseButtonEvent]()[]
         elif _event[].type == EventType.MOUSEWHEEL:
             return _event.bitcast[MouseWheelEvent]()[]
-        elif (
-            _event[].type == EventType.AUDIODEVICEADDED
-            or _event[].type == EventType.AUDIODEVICEREMOVED
-        ):
+        elif _event[].type == EventType.AUDIODEVICEADDED or _event[].type == EventType.AUDIODEVICEREMOVED:
             return _event.bitcast[AudioDeviceEvent]()[]
         else:
             print("Unhandled event type: " + str(_event[].type))

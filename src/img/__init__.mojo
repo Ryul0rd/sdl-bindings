@@ -6,6 +6,7 @@ from ..surface import _Surface
 from sys.info import os_is_macos, os_is_linux
 from builtin.constrained import constrained
 
+
 struct _IMG:
     var _initialized: Bool
     var _handle: DLHandle
@@ -22,8 +23,12 @@ struct _IMG:
     fn __init__[init: Bool](inout self, error: SDL_Error):
         self._initialized = True
         constrained[os_is_linux() or os_is_macos(), "OS is not supported"]()
+
         @parameter
-        self._handle = DLHandle(".magic/envs/default/lib/libSDL2_image.dylib") if os_is_macos() else DLHandle(".magic/envs/default/lib/libSDL2_image.so")
+        if os_is_macos():
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_image.dylib")
+        else:
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_image.so")
         self.error = error
         self._img_init = self._handle
         self._img_quit = self._handle
@@ -60,6 +65,4 @@ struct _IMG:
 
     @always_inline
     fn load_image(self, file: Ptr[CharC]) raises -> Ptr[_Surface]:
-        return self.error.if_null(
-            self._img_load.call(file), "Could not load image"
-        )
+        return self.error.if_null(self._img_load.call(file), "Could not load image")

@@ -5,13 +5,9 @@ struct Font[lif: AnyLifetime[False].type]:
     var sdl: Reference[SDL, lif]
     var _font_ptr: Ptr[_Font]
 
-    fn __init__(
-        inout self, ref [lif]sdl: SDL, path: String, size: Int32
-    ) raises:
+    fn __init__(inout self, ref [lif]sdl: SDL, path: String, size: Int32) raises:
         self.sdl = sdl
-        self._font_ptr = sdl.ttf.open_font(
-            path.unsafe_cstr_ptr().bitcast[DType.uint8](), size
-        )
+        self._font_ptr = sdl.ttf.open_font(path.unsafe_cstr_ptr().bitcast[DType.uint8](), size)
 
     fn __init__(inout self, ref [lif]sdl: SDL, font_ptr: Ptr[_Font]):
         self.sdl = sdl
@@ -30,9 +26,7 @@ struct Font[lif: AnyLifetime[False].type]:
             ),
         )
 
-    fn render_shaded(
-        self, text: String, foreground: Color, background: Color
-    ) raises -> Surface[lif]:
+    fn render_shaded(self, text: String, foreground: Color, background: Color) raises -> Surface[lif]:
         return Surface(
             self.sdl[],
             self.sdl[].ttf.render_shaded_text(

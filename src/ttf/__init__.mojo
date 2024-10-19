@@ -7,15 +7,14 @@ from .font import Font, _Font
 from sys.info import os_is_macos, os_is_linux
 from builtin.constrained import constrained
 
+
 struct _TTF:
     var _initialized: Bool
     var _handle: DLHandle
     var error: SDL_Error
     var _ttf_init: SDL_Fn["TTF_Init", fn () -> Int32]
     var _ttf_quit: SDL_Fn["TTF_Quit", fn () -> NoneType]
-    var _ttf_open_font: SDL_Fn[
-        "TTF_OpenFont", fn (Ptr[CharC], Int32) -> Ptr[_Font]
-    ]
+    var _ttf_open_font: SDL_Fn["TTF_OpenFont", fn (Ptr[CharC], Int32) -> Ptr[_Font]]
     var _ttf_close_font: SDL_Fn["TTF_CloseFont", fn (Ptr[_Font]) -> NoneType]
     var _ttf_render_text_solid: SDL_Fn[
         "TTF_RenderText_Solid",
@@ -37,8 +36,12 @@ struct _TTF:
     fn __init__[init: Bool](inout self, error: SDL_Error):
         self._initialized = True
         constrained[os_is_linux() or os_is_macos(), "OS is not supported"]()
+
         @parameter
-        self._handle = DLHandle(".magic/envs/default/lib/libSDL2_ttf.dylib") if os_is_macos() else DLHandle(".magic/envs/default/lib/libSDL2_ttf.so")
+        if os_is_macos():
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_ttf.dylib")
+        else:
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_ttf.so")
         self.error = error
         self._ttf_init = self._handle
         self._ttf_quit = self._handle
@@ -58,9 +61,7 @@ struct _TTF:
 
     @always_inline
     fn init(self) raises:
-        self.error.if_code(
-            self._ttf_init.call(), "Could not initialize SDL TTF"
-        )
+        self.error.if_code(self._ttf_init.call(), "Could not initialize SDL TTF")
 
     @always_inline
     fn quit(self):
@@ -68,36 +69,28 @@ struct _TTF:
 
     @always_inline
     fn open_font(self, path: Ptr[CharC], size: Int32) raises -> Ptr[_Font]:
-        return self.error.if_null(
-            self._ttf_open_font.call(path, size), "Could not open font"
-        )
+        return self.error.if_null(self._ttf_open_font.call(path, size), "Could not open font")
 
     @always_inline
     fn close_font(self, font: Ptr[_Font]):
         self._ttf_close_font.call(font)
 
     @always_inline
-    fn render_solid_text(
-        self, font: Ptr[_Font], text: Ptr[CharC], fg: UInt32
-    ) raises -> Ptr[_Surface]:
+    fn render_solid_text(self, font: Ptr[_Font], text: Ptr[CharC], fg: UInt32) raises -> Ptr[_Surface]:
         return self.error.if_null(
             self._ttf_render_text_solid.call(font, text, fg),
             "Could not render solid text",
         )
 
     @always_inline
-    fn render_shaded_text(
-        self, font: Ptr[_Font], text: Ptr[CharC], fg: UInt32, bg: UInt32
-    ) raises -> Ptr[_Surface]:
+    fn render_shaded_text(self, font: Ptr[_Font], text: Ptr[CharC], fg: UInt32, bg: UInt32) raises -> Ptr[_Surface]:
         return self.error.if_null(
             self._ttf_render_text_shaded.call(font, text, fg, bg),
             "Could not render shaded text",
         )
 
     @always_inline
-    fn render_blended_text(
-        self, font: Ptr[_Font], text: Ptr[CharC], fg: UInt32
-    ) raises -> Ptr[_Surface]:
+    fn render_blended_text(self, font: Ptr[_Font], text: Ptr[CharC], fg: UInt32) raises -> Ptr[_Surface]:
         return self.error.if_null(
             self._ttf_render_text_blended.call(font, text, fg),
             "Could not render blended text",
