@@ -13,7 +13,7 @@ from .img import _IMG
 from .mix import _MIX
 from .ttf import _TTF
 from sys.info import os_is_macos, os_is_linux
-
+from builtin.constrained import constrained
 
 struct SDL:
     """SDL Wrapper."""
@@ -772,15 +772,11 @@ struct _SDL:
         "SDL_GL_DeleteContext", fn (Ptr[_GLContext]) -> None
     ]
 
-    fn __init__(inout self) raises:
+    fn __init__(inout self):
         # x--- initialize sdl bindings
-        if os_is_macos():
-            self._handle = DLHandle(".magic/envs/default/lib/libSDL2.dylib")
-        elif os_is_linux():
-            self._handle = DLHandle(".magic/envs/default/lib/libSDL2.so")
-        else:
-            raise Error("Unsupported OS")
-
+        constrained[os_is_linux() or os_is_macos(), "OS is not supported"]()
+        @parameter
+        self._handle = DLHandle(".magic/envs/default/lib/libSDL2.dylib") if os_is_macos() else DLHandle(".magic/envs/default/lib/libSDL2.so")
         self._init = self._handle
         self._quit = self._handle
         self._init_sub_system = self._handle

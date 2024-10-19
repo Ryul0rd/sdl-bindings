@@ -4,7 +4,7 @@ from sys.ffi import DLHandle
 from .._sdl import SDL_Fn
 from ..surface import _Surface
 from sys.info import os_is_macos, os_is_linux
-
+from builtin.constrained import constrained
 
 struct _IMG:
     var _initialized: Bool
@@ -19,16 +19,11 @@ struct _IMG:
         self._initialized = False
         __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(self))
 
-    fn __init__[init: Bool](inout self, error: SDL_Error) raises:
+    fn __init__[init: Bool](inout self, error: SDL_Error):
         self._initialized = True
-        if os_is_macos():
-            self._handle = DLHandle(
-                ".magic/envs/default/lib/libSDL2_image.dylib"
-            )
-        elif os_is_linux():
-            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_image.so")
-        else:
-            raise Error("Unsupported OS")
+        constrained[os_is_linux() or os_is_macos(), "OS is not supported"]()
+        @parameter
+        self._handle = DLHandle(".magic/envs/default/lib/libSDL2_image.dylib") if os_is_macos() else DLHandle(".magic/envs/default/lib/libSDL2_image.so")
         self.error = error
         self._img_init = self._handle
         self._img_quit = self._handle
