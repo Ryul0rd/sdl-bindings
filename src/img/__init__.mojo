@@ -3,6 +3,8 @@
 from sys.ffi import DLHandle
 from .._sdl import SDL_Fn
 from ..surface import _Surface
+from sys.info import os_is_macos, os_is_linux
+from builtin.constrained import constrained
 
 
 struct _IMG:
@@ -20,13 +22,26 @@ struct _IMG:
 
     fn __init__[init: Bool](inout self, error: SDL_Error):
         self._initialized = True
-        self._handle = DLHandle(".magic/envs/default/lib/libSDL2_image.so")
+        constrained[os_is_linux() or os_is_macos(), "OS is not supported"]()
+
+        @parameter
+        if os_is_macos():
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_image.dylib")
+        else:
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_image.so")
         self.error = error
         self._img_init = self._handle
         self._img_quit = self._handle
         self._img_load = self._handle
 
-    fn __init__(inout self, error: SDL_Error, jpeg: Bool = True, png: Bool = True, tif: Bool = False, webp: Bool = False) raises:
+    fn __init__(
+        inout self,
+        error: SDL_Error,
+        jpeg: Bool = True,
+        png: Bool = True,
+        tif: Bool = False,
+        webp: Bool = False,
+    ) raises:
         self.__init__[False](error)
         var flags: Int32 = 0
         flags |= 0x00000001 * jpeg
@@ -51,7 +66,3 @@ struct _IMG:
     @always_inline
     fn load_image(self, file: Ptr[CharC]) raises -> Ptr[_Surface]:
         return self.error.if_null(self._img_load.call(file), "Could not load image")
-
-
-
-

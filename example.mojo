@@ -8,15 +8,27 @@ def main():
     alias screen_height = 480
 
     # mix breaks on wsl
-    var sdl = SDL(video=True, audio=True, timer=True, events=True, gfx=True, img=True, mix=False, ttf=True)
-    var window = Window(sdl, 'SDL Test', screen_width, screen_height)
+    var sdl = SDL(
+        video=True,
+        audio=True,
+        timer=True,
+        events=True,
+        gfx=True,
+        img=True,
+        mix=False,
+        ttf=True,
+    )
+    var window = Window(sdl, "SDL Test", screen_width, screen_height)
     var clock = Clock(sdl, target_fps=60)
     var held_keys = SIMD[DType.bool, 512]()
 
-    var apple = Surface(sdl, sdl.img.load_image(('assets/apple.png').unsafe_cstr_ptr().bitcast[DType.uint8]()))
+    var apple = Surface(
+        sdl,
+        sdl.img.load_image(("assets/apple.png").unsafe_cstr_ptr().bitcast[DType.uint8]()),
+    )
     var rotated_apple = apple.rotozoomed(90, 1, True)
     var font = ttf.Font(sdl, "assets/Beef'd.ttf", 24)
-    var hello = font.render_solid('Hello, World!', Color(255, 0, 255, 255))
+    var hello = font.render_solid("Hello, World!", Color(255, 0, 255, 255))
     hello.convert(window.get_surface())
 
     # var test_sound = mix.MixMusic(sdl.mix, 'assets/audio/error_003.ogg')

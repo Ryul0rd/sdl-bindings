@@ -8,10 +8,10 @@ from ._sdl import SDL_Fn
 @register_passable("trivial")
 struct SDL_Error:
     """A wrapper around sdl errors."""
-    
+
     var _get_error: SDL_Fn["SDL_GetError", fn () -> Ptr[CharC]]
     var _set_error: SDL_Fn["SDL_SetError", fn (Ptr[CharC]) -> IntC]
-    var _clear_error: SDL_Fn["SDL_ClearError", fn() -> NoneType]
+    var _clear_error: SDL_Fn["SDL_ClearError", fn () -> NoneType]
 
     @always_inline("nodebug")
     fn __init__(inout self, _handle: DLHandle):
@@ -49,6 +49,7 @@ struct SDL_Error:
         """Raises an error if the pointer is null."""
         if ptr:
             return ptr
+
         @parameter
         if error_level > 0:
             raise self(msg)
@@ -56,6 +57,7 @@ struct SDL_Error:
     @always_inline("nodebug")
     fn if_code(self, code: IntC, msg: StringLiteral) raises:
         """Raises an error if the error code is not zero."""
+
         @parameter
         if error_level > 0:
             if code != 0:

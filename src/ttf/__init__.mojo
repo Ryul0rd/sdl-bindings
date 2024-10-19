@@ -4,6 +4,8 @@ from sys.ffi import DLHandle
 from .._sdl import SDL_Fn
 from ..surface import _Surface
 from .font import Font, _Font
+from sys.info import os_is_macos, os_is_linux
+from builtin.constrained import constrained
 
 
 struct _TTF:
@@ -14,9 +16,18 @@ struct _TTF:
     var _ttf_quit: SDL_Fn["TTF_Quit", fn () -> NoneType]
     var _ttf_open_font: SDL_Fn["TTF_OpenFont", fn (Ptr[CharC], Int32) -> Ptr[_Font]]
     var _ttf_close_font: SDL_Fn["TTF_CloseFont", fn (Ptr[_Font]) -> NoneType]
-    var _ttf_render_text_solid: SDL_Fn["TTF_RenderText_Solid", fn (Ptr[_Font], Ptr[CharC], UInt32) -> Ptr[_Surface]]
-    var _ttf_render_text_shaded: SDL_Fn["TTF_RenderText_Shaded", fn (Ptr[_Font], Ptr[CharC], UInt32, UInt32) -> Ptr[_Surface]]
-    var _ttf_render_text_blended: SDL_Fn["TTF_RenderText_Blended", fn (Ptr[_Font], Ptr[CharC], UInt32) -> UnsafePointer[_Surface]]
+    var _ttf_render_text_solid: SDL_Fn[
+        "TTF_RenderText_Solid",
+        fn (Ptr[_Font], Ptr[CharC], UInt32) -> Ptr[_Surface],
+    ]
+    var _ttf_render_text_shaded: SDL_Fn[
+        "TTF_RenderText_Shaded",
+        fn (Ptr[_Font], Ptr[CharC], UInt32, UInt32) -> Ptr[_Surface],
+    ]
+    var _ttf_render_text_blended: SDL_Fn[
+        "TTF_RenderText_Blended",
+        fn (Ptr[_Font], Ptr[CharC], UInt32) -> UnsafePointer[_Surface],
+    ]
 
     fn __init__(inout self, none: NoneType):
         self._initialized = False
@@ -24,7 +35,13 @@ struct _TTF:
 
     fn __init__[init: Bool](inout self, error: SDL_Error):
         self._initialized = True
-        self._handle = DLHandle(".magic/envs/default/lib/libSDL2_ttf.so")
+        constrained[os_is_linux() or os_is_macos(), "OS is not supported"]()
+
+        @parameter
+        if os_is_macos():
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_ttf.dylib")
+        else:
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_ttf.so")
         self.error = error
         self._ttf_init = self._handle
         self._ttf_quit = self._handle
@@ -60,12 +77,21 @@ struct _TTF:
 
     @always_inline
     fn render_solid_text(self, font: Ptr[_Font], text: Ptr[CharC], fg: UInt32) raises -> Ptr[_Surface]:
-        return self.error.if_null(self._ttf_render_text_solid.call(font, text, fg), "Could not render solid text")
+        return self.error.if_null(
+            self._ttf_render_text_solid.call(font, text, fg),
+            "Could not render solid text",
+        )
 
     @always_inline
     fn render_shaded_text(self, font: Ptr[_Font], text: Ptr[CharC], fg: UInt32, bg: UInt32) raises -> Ptr[_Surface]:
-        return self.error.if_null(self._ttf_render_text_shaded.call(font, text, fg, bg), "Could not render shaded text")
+        return self.error.if_null(
+            self._ttf_render_text_shaded.call(font, text, fg, bg),
+            "Could not render shaded text",
+        )
 
     @always_inline
     fn render_blended_text(self, font: Ptr[_Font], text: Ptr[CharC], fg: UInt32) raises -> Ptr[_Surface]:
-        return self.error.if_null(self._ttf_render_text_blended.call(font, text, fg), "Could not render blended text")
+        return self.error.if_null(
+            self._ttf_render_text_blended.call(font, text, fg),
+            "Could not render blended text",
+        )

@@ -14,4 +14,3 @@ fn opt2ptr(optional: Optional) -> Ptr[optional.T]:
         return adr(optional.unsafe_value())
     else:
         return Ptr[optional.T]()
-

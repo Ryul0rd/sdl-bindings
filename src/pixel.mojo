@@ -2,6 +2,7 @@
 
 from sys.info import is_big_endian
 
+
 @value
 struct Pixels:
     var _ptr: Ptr[NoneType]
