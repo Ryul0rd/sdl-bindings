@@ -11,7 +11,7 @@ struct Clock[lif: AnyLifetime[False].type]:
     var delta_time: Float64
     var _last_tick_time: Int
 
-    fn __init__(inout self, ref[lif] sdl: SDL, target_fps: Int):
+    fn __init__(inout self, ref [lif]sdl: SDL, target_fps: Int):
         self.sdl = sdl
         self.target_fps = target_fps
         self.delta_time = 1 / target_fps

@@ -484,6 +484,7 @@ struct MouseButtonEvent:
 @register_passable("trivial")
 struct MouseWheelEvent:
     """Mouse wheel event structure (event.wheel.*)."""
+
     var type: UInt32
     """SDL_MOUSEWHEEL."""
     var timestamp: UInt32
@@ -515,9 +516,6 @@ struct AudioDeviceEvent:
     var timestamp: UInt32
     var which: UInt32
     var iscapture: UInt8
-
-
-
 
 
 # # var _peep_events = _sdl.get_function[fn(Ptr[C_Event], Int32, UInt8, UInt32, UInt32) -> Int32]('SDL_PeepEvents')

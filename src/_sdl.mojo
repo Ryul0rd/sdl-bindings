@@ -1,6 +1,6 @@
 """Defines an SDL struct."""
 
-from sys import DLHandle, info
+from sys import DLHandle, os_is_macos, os_is_linux
 from pathlib import Path
 from collections import Optional
 from .window import _Window, _GLContext
@@ -14,17 +14,54 @@ from .mix import _MIX
 from .ttf import _TTF
 
 
+trait AddonLib:
+    fn __init__(inout self, error: SDL_Error):
+        ...
+
+    fn quit(self):
+        ...
+
+
+struct OptionalLib[LibType: AddonLib, error_msg: StringLiteral]:
+    var _lib: LibType
+    var _enabled: Bool
+
+    fn __init__(inout self, none: None):
+        self._lib = utils._uninit[LibType]()
+        self._enabled = False
+
+    fn __init__(inout self, error: SDL_Error):
+        self._lib = LibType(error)
+        self._enabled = True
+
+    fn __bool__(self) -> Bool:
+        return self._enabled
+
+    fn __call__(self) raises -> ref [__lifetime_of(self)] LibType:
+        """Unwrap the optional if possible, otherwise error."""
+
+        @parameter
+        if error.error_level > 0:
+            if not self:
+                raise error_msg
+        return self._lib
+
+    fn __del__(owned self):
+        if self._enabled:
+            self._lib.quit()
+
+
 struct SDL:
-    """SDL Wrapper."""
+    """Safe wrapper around sdl bindings."""
 
     # raw bindings
     var _sdl: _SDL
 
     # libraries
-    var gfx: _GFX
-    var img: _IMG
-    var mix: _MIX
-    var ttf: _TTF
+    var _gfx: OptionalLib[_GFX, "sdl_gfx is not enabled"]
+    var _img: OptionalLib[_IMG, "sdl_img is not enabled"]
+    var _mix: OptionalLib[_MIX, "sdl_mix is not enabled"]
+    var _ttf: OptionalLib[_TTF, "sdl_ttf is not enabled"]
 
     fn __init__(
         inout self,
@@ -39,36 +76,17 @@ struct SDL:
         gfx: Bool = False,
         img: Bool = False,
         mix: Bool = False,
-        ttf: Bool = False
+        ttf: Bool = False,
     ) raises:
         """This initializes SDL bindings, and SDL itself.
-        
+
         If you want to only initialize the bindings, use `_SDL`.
         """
         self._sdl = _SDL()
-
-        # libraries
-        if gfx:
-            self.gfx = _GFX(self._sdl.error)
-        else:
-            self.gfx = None
-        
-        if img:
-            self.img = _IMG(self._sdl.error)
-        else:
-            self.img = None
-
-        if mix:
-            self.mix = _MIX(self._sdl.error)
-        else:
-            self.mix = None
-
-        # self.mix = None
-
-        if ttf:
-            self.ttf = _TTF(self._sdl.error)
-        else:
-            self.ttf = None
+        self._gfx = None
+        self._img = None
+        self._mix = None
+        self._ttf = None
 
         # x--- set window flags
         var flags: UInt32 = 0
@@ -85,6 +103,35 @@ struct SDL:
 
         # x--- initialize sdl
         self._sdl.init(flags)
+
+        if gfx:
+            self.init_gfx()
+        if img:
+            self.init_img()
+        if mix:
+            self.init_mix()
+        if ttf:
+            self.init_ttf()
+
+    fn init_gfx(inout self) raises:
+        self._gfx = self._sdl.error
+
+    fn init_img(inout self, jpeg: Bool = True, png: Bool = True, tif: Bool = False, webp: Bool = False) raises:
+        self._img = self._sdl.error
+        var flags: Int32 = 0
+        flags |= 0x00000001 * jpeg
+        flags |= 0x00000002 * png
+        flags |= 0x00000004 * tif
+        flags |= 0x00000008 * webp
+        self._img._lib.init(flags)
+
+    fn init_mix(inout self, frequency: Int32 = 44100, format: UInt16 = mix.sound.AUDIO_S16LSB, channels: Int32 = 2, chunksize: Int32 = 2048) raises:
+        self._mix = self._sdl.error
+        self._mix._lib.init(frequency, format, channels, chunksize)
+
+    fn init_ttf(inout self) raises:
+        self._ttf = self._sdl.error
+        self._ttf._lib.init()
 
     fn __del__(owned self):
         self._sdl.quit()
@@ -120,7 +167,7 @@ struct SDL_Fn[name: String, T: AnyTrivialRegType]:
 
 
 struct _SDL:
-    """Raw SDL Bindings."""
+    """Raw unsafe SDL Bindings."""
 
     # sdl handle
     var _handle: DLHandle
@@ -151,21 +198,21 @@ struct _SDL:
     var _create_window: SDL_Fn["SDL_CreateWindow", fn (Ptr[CharC], IntC, IntC, IntC, IntC, UInt32) -> Ptr[_Window]]
     var _create_shaped_window: SDL_Fn["SDL_CreateShapedWindow", fn (Ptr[CharC], UIntC, UIntC, UIntC, UIntC, UInt32) -> Ptr[_Window]]
     var _create_window_and_renderer: SDL_Fn["SDL_CreateWindowAndRenderer", fn (IntC, IntC, UInt32, Ptr[_Window], Ptr[_Renderer]) -> IntC]
-    var _create_window_from: SDL_Fn["SDL_CreateWindowFrom", fn(Ptr[NoneType]) -> Ptr[_Window]]
-    var _destroy_window_surface: SDL_Fn["SDL_DestroyWindowSurface", fn(Ptr[_Window]) -> IntC]
+    var _create_window_from: SDL_Fn["SDL_CreateWindowFrom", fn (Ptr[NoneType]) -> Ptr[_Window]]
+    var _destroy_window_surface: SDL_Fn["SDL_DestroyWindowSurface", fn (Ptr[_Window]) -> IntC]
     var _destroy_window: SDL_Fn["SDL_DestroyWindow", fn (Ptr[_Window]) -> NoneType]
-    var _is_shaped_window: SDL_Fn["SDL_IsShapedWindow", fn(Ptr[_Window]) -> BoolC]
+    var _is_shaped_window: SDL_Fn["SDL_IsShapedWindow", fn (Ptr[_Window]) -> BoolC]
     var _has_window_surface: SDL_Fn["SDL_HasWindowSurface", fn (Ptr[_Window]) -> BoolC]
     var _get_grabbed_window: SDL_Fn["SDL_GetGrabbedWindow", fn () -> Ptr[_Window]]
     # SDL_GetShapedWindowMode
     var _get_window_border_size: SDL_Fn["SDL_GetWindowBordersSize", fn (Ptr[_Window], Ptr[IntC], Ptr[IntC], Ptr[IntC], Ptr[IntC]) -> IntC]
     var _get_window_brightness: SDL_Fn["SDL_GetWindowBrightness", fn (Ptr[_Window]) -> Float32]
     var _get_window_gamma_ramp: SDL_Fn["SDL_GetWindowGammaRamp", fn (Ptr[_Window], Ptr[UInt16], Ptr[UInt16], Ptr[UInt16]) -> IntC]
-    var _get_window_opacity: SDL_Fn["SDL_GetWindowOpacity", fn(Ptr[_Window], Ptr[Float32]) -> IntC]
+    var _get_window_opacity: SDL_Fn["SDL_GetWindowOpacity", fn (Ptr[_Window], Ptr[Float32]) -> IntC]
     var _get_window_data: SDL_Fn["SDL_GetWindowData", fn (Ptr[_Window], Ptr[CharC]) -> Ptr[NoneType]]
-    var _get_window_display_index: SDL_Fn["SDL_GetWindowDisplayIndex", fn(Ptr[_Window]) -> IntC]
+    var _get_window_display_index: SDL_Fn["SDL_GetWindowDisplayIndex", fn (Ptr[_Window]) -> IntC]
     var _get_window_display_mode: SDL_Fn["SDL_GetWindowDisplayMode", fn (Ptr[_Window], Ptr[DisplayMode]) -> IntC]
-    var _get_window_flags: SDL_Fn["SDL_GetWindowFlags", fn(Ptr[_Window]) -> UInt32]
+    var _get_window_flags: SDL_Fn["SDL_GetWindowFlags", fn (Ptr[_Window]) -> UInt32]
     var _get_window_from_id: SDL_Fn["SDL_GetWindowFromID", fn (UInt32) -> Ptr[_Window]]
     var _get_window_grab: SDL_Fn["SDL_GetWindowGrab", fn (Ptr[_Window]) -> BoolC]
     # SDL_GetWindowICCProfile
@@ -183,7 +230,7 @@ struct _SDL:
     # # SDL_GetWindowWMInfo
     var _get_window_surface: SDL_Fn["SDL_GetWindowSurface", fn (Ptr[_Window]) -> Ptr[_Surface]]
     var _get_renderer: SDL_Fn["SDL_GetRenderer", fn (Ptr[_Window]) -> Ptr[_Renderer]]
-    var _set_window_always_on_top: SDL_Fn["SDL_SetWindowAlwaysOnTop", fn(Ptr[_Window], BoolC) -> NoneType]
+    var _set_window_always_on_top: SDL_Fn["SDL_SetWindowAlwaysOnTop", fn (Ptr[_Window], BoolC) -> NoneType]
     var _set_window_bordered: SDL_Fn["SDL_SetWindowBordered", fn (Ptr[_Window], BoolC) -> NoneType]
     var _set_window_brightness: SDL_Fn["SDL_SetWindowBrightness", fn (Ptr[_Window], Float32) -> IntC]
     var _set_window_gamma_ramp: SDL_Fn["SDL_SetWindowGammaRamp", fn (Ptr[_Window], Ptr[UInt16], Ptr[UInt16], Ptr[UInt16]) -> IntC]
@@ -199,7 +246,7 @@ struct _SDL:
     var _set_window_mouse_grab: SDL_Fn["SDL_SetWindowMouseGrab", fn (Ptr[_Window], BoolC) -> NoneType]
     var _set_window_maximum_size: SDL_Fn["SDL_SetWindowMaximumSize", fn (Ptr[_Window], IntC, IntC) -> NoneType]
     var _set_window_minimum_size: SDL_Fn["SDL_SetWindowMinimumSize", fn (Ptr[_Window], IntC, IntC) -> NoneType]
-    var _set_window_modal_for: SDL_Fn["SDL_SetWindowModalFor", fn(Ptr[_Window], Ptr[_Window]) -> IntC]
+    var _set_window_modal_for: SDL_Fn["SDL_SetWindowModalFor", fn (Ptr[_Window], Ptr[_Window]) -> IntC]
     var _set_window_mouse_rect: SDL_Fn["SDL_SetWindowMouseRect", fn (Ptr[_Window], Ptr[Rect]) -> IntC]
     var _set_window_position: SDL_Fn["SDL_SetWindowPosition", fn (Ptr[_Window], IntC, IntC) -> NoneType]
     var _set_window_resizable: SDL_Fn["SDL_SetWindowResizable", fn (Ptr[_Window], BoolC) -> NoneType]
@@ -212,18 +259,18 @@ struct _SDL:
     var _update_window_surface: SDL_Fn["SDL_UpdateWindowSurface", fn (Ptr[_Window]) -> IntC]
     var _update_window_surface_rects: SDL_Fn["SDL_UpdateWindowSurfaceRects", fn (Ptr[_Window], Ptr[Rect], IntC) -> IntC]
     var _show_window: SDL_Fn["SDL_ShowWindow", fn (Ptr[_Window]) -> NoneType]
-    var _hide_window: SDL_Fn["SDL_HideWindow", fn(Ptr[_Window]) -> NoneType]
-    var _maximize_window: SDL_Fn["SDL_MaximizeWindow", fn(Ptr[_Window]) -> NoneType]
-    var _minimize_window: SDL_Fn["SDL_MinimizeWindow", fn(Ptr[_Window]) -> NoneType]
-    var _flash_window: SDL_Fn["SDL_FlashWindow", fn(Ptr[_Window], FlashOperation) -> IntC]
-    var _raise_window: SDL_Fn["SDL_RaiseWindow", fn(Ptr[_Window]) -> NoneType]
-    var _restore_window: SDL_Fn["SDL_RestoreWindow", fn(Ptr[_Window]) -> NoneType]
+    var _hide_window: SDL_Fn["SDL_HideWindow", fn (Ptr[_Window]) -> NoneType]
+    var _maximize_window: SDL_Fn["SDL_MaximizeWindow", fn (Ptr[_Window]) -> NoneType]
+    var _minimize_window: SDL_Fn["SDL_MinimizeWindow", fn (Ptr[_Window]) -> NoneType]
+    var _flash_window: SDL_Fn["SDL_FlashWindow", fn (Ptr[_Window], FlashOperation) -> IntC]
+    var _raise_window: SDL_Fn["SDL_RaiseWindow", fn (Ptr[_Window]) -> NoneType]
+    var _restore_window: SDL_Fn["SDL_RestoreWindow", fn (Ptr[_Window]) -> NoneType]
     var _warp_mouse_in_window: SDL_Fn["SDL_WarpMouseInWindow", fn (Ptr[_Window], IntC, IntC) -> NoneType]
 
     # surface bindings
     var _create_rgb_surface: SDL_Fn["SDL_CreateRGBSurface", fn (UInt32, IntC, IntC, IntC, UInt32, UInt32, UInt32, UInt32) -> Ptr[_Surface]]
     var _create_rgb_surface_from: SDL_Fn["SDL_CreateRGBSurfaceFrom", fn (Ptr[NoneType], IntC, IntC, IntC, IntC, UInt32, UInt32, UInt32, UInt32) -> Ptr[_Surface]]
-    var _create_rgb_surface_with_format: SDL_Fn["SDL_CreateRGBSurfaceWithFormat", fn(UInt32, IntC, IntC, IntC, UInt32) -> Ptr[_Surface]]
+    var _create_rgb_surface_with_format: SDL_Fn["SDL_CreateRGBSurfaceWithFormat", fn (UInt32, IntC, IntC, IntC, UInt32) -> Ptr[_Surface]]
     var _create_rgb_surface_with_format_from: SDL_Fn["SDL_CreateRGBSurfaceWithFormatFrom", fn (Ptr[NoneType], IntC, IntC, IntC, IntC, UInt32) -> Ptr[_Surface]]
     var _free_surface: SDL_Fn["SDL_FreeSurface", fn (Ptr[_Surface]) -> None]
     var _convert_surface: SDL_Fn["SDL_ConvertSurface", fn (Ptr[_Surface], Ptr[SurfacePixelFormat], UInt32) -> Ptr[_Surface]]
@@ -232,7 +279,7 @@ struct _SDL:
     var _get_surface_color_mod: SDL_Fn["SDL_GetSurfaceColorMod", fn (Ptr[_Surface], Ptr[UInt8], Ptr[UInt8], Ptr[UInt8]) -> IntC]
     var _get_surface_alpha_mod: SDL_Fn["SDL_GetSurfaceAlphaMod", fn (Ptr[_Surface], Ptr[UInt8]) -> IntC]
     var _get_surface_blend_mode: SDL_Fn["SDL_GetSurfaceBlendMode", fn (Ptr[_Surface], Ptr[BlendMode]) -> IntC]
-    var _set_surface_color_mod: SDL_Fn["SDL_SetSurfaceColorMod", fn(Ptr[_Surface], UInt8, UInt8, UInt8) -> IntC]
+    var _set_surface_color_mod: SDL_Fn["SDL_SetSurfaceColorMod", fn (Ptr[_Surface], UInt8, UInt8, UInt8) -> IntC]
     var _set_surface_alpha_mod: SDL_Fn["SDL_SetSurfaceAlphaMod", fn (Ptr[_Surface], UInt8) -> IntC]
     var _set_surface_blend_mode: SDL_Fn["SDL_SetSurfaceBlendMode", fn (Ptr[_Surface], BlendMode) -> IntC]
     var _set_surface_palette: SDL_Fn["SDL_SetSurfacePalette", fn (Ptr[_Surface], Ptr[Palette]) -> IntC]
@@ -256,7 +303,7 @@ struct _SDL:
     var _set_render_target: SDL_Fn["SDL_SetRenderTarget", fn (Ptr[_Renderer], Ptr[_Texture]) -> IntC]
     var _set_render_draw_color: SDL_Fn["SDL_SetRenderDrawColor", fn (Ptr[_Renderer], UInt8, UInt8, UInt8, UInt8) -> IntC]
     var _set_render_draw_blend_mode: SDL_Fn["SDL_SetRenderDrawBlendMode", fn (Ptr[_Renderer], BlendMode) -> IntC]
-    var _get_render_draw_color: SDL_Fn["SDL_GetRenderDrawColor", fn (Ptr[_Renderer], Ptr[UInt8], Ptr[UInt8], Ptr[UInt8], Ptr[UInt8], ) -> IntC]
+    var _get_render_draw_color: SDL_Fn["SDL_GetRenderDrawColor", fn (Ptr[_Renderer], Ptr[UInt8], Ptr[UInt8], Ptr[UInt8], Ptr[UInt8]) -> IntC]
     var _get_render_draw_blend_mode: SDL_Fn["SDL_GetRenderDrawBlendMode", fn (Ptr[_Renderer], Ptr[BlendMode]) -> IntC]
     var _get_renderer_info: SDL_Fn["SDL_GetRendererInfo", fn (Ptr[_Renderer], Ptr[RendererInfo]) -> IntC]
     var _get_renderer_output_size: SDL_Fn["SDL_GetRendererOutputSize", fn (Ptr[_Renderer], Ptr[IntC], Ptr[IntC]) -> IntC]
@@ -335,8 +382,15 @@ struct _SDL:
 
     fn __init__(inout self) raises:
         # x--- initialize sdl bindings
-        self._handle = DLHandle(".magic/envs/default/lib/libSDL2.so")
-        
+        @parameter
+        if os_is_macos():
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2.dylib")
+        elif os_is_linux():
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2.so")
+        else:
+            constrained[False, "OS is not supported"]()
+            self._handle = utils._uninit[DLHandle]()
+
         self._init = self._handle
         self._quit = self._handle
         self._init_sub_system = self._handle
@@ -544,7 +598,6 @@ struct _SDL:
         self._gl_create_context = self._handle
         self._gl_delete_context = self._handle
 
-
     # TODO: These could be generated automatically, but
     #       im still looking for a nice way. Then these
     #       could be made more private and parametrically
@@ -701,7 +754,7 @@ struct _SDL:
     fn fill_rects(self, surface: Ptr[_Surface], rects: Ptr[Rect], count: IntC, color: UInt32) raises:
         """Perform a fast fill of a set of rectangles with a specific color."""
         self.error.if_code(self._fill_rects.call(surface, rects, count, color), "Could not fill rects")
-    
+
     # var _get_surface_color_mod: SDL_Fn["SDL_GetSurfaceColorMod", fn (Ptr[_Surface], Ptr[UInt8], Ptr[UInt8], Ptr[UInt8]) -> IntC]
     # var _get_surface_alpha_mod: SDL_Fn["SDL_GetSurfaceAlphaMod", fn (Ptr[_Surface], Ptr[UInt8]) -> IntC]
     # var _get_surface_blend_mode: SDL_Fn["SDL_GetSurfaceBlendMode", fn (Ptr[_Surface], Ptr[BlendMode]) -> IntC]
@@ -826,8 +879,7 @@ struct _SDL:
     @always_inline
     fn get_render_driver_info(self, index: IntC) raises -> RendererInfo:
         """Get info about a specific 2D rendering driver for the current display."""
-        var renderer_info: RendererInfo
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(renderer_info))
+        var renderer_info = utils._uninit[RendererInfo]()
         self.error.if_code(self._get_render_driver_info.call(index, Ptr.address_of(renderer_info)), "Could not get render driver info")
         return renderer_info
 
@@ -938,12 +990,13 @@ struct _SDL:
 
     @always_inline
     fn render_geometry(self, renderer: Ptr[_Renderer], texture: Ptr[_Texture], vertices: Ptr[Vertex], num_vertices: IntC, indices: Ptr[IntC], num_indices: IntC) raises:
-        """Render a list of triangles, optionally using a texture and indices into the vertex array Color 
+        """Render a list of triangles, optionally using a texture and indices into the vertex array Color
         and alpha modulation is done per vertex (SDL_SetTextureColorMod and SDL_SetTextureAlphaMod are ignored)."""
         self.error.if_code(self._render_geometry.call(renderer, texture, vertices, num_vertices, indices, num_indices), "Could not render geometry")
 
     @always_inline
-    fn render_geometry_raw(self, 
+    fn render_geometry_raw(
+        self,
         renderer: Ptr[_Renderer],
         texture: Ptr[_Texture],
         xy: Ptr[Float32],
@@ -957,7 +1010,8 @@ struct _SDL:
         num_indices: IntC,
         size_indices: IntC,
     ) raises:
-        self.error.if_code(self._render_geometry_raw.call(
+        self.error.if_code(
+            self._render_geometry_raw.call(
                 renderer,
                 texture,
                 xy,
@@ -970,7 +1024,9 @@ struct _SDL:
                 indices,
                 num_indices,
                 size_indices,
-            ), "Could not render geometry raw")
+            ),
+            "Could not render geometry raw",
+        )
 
     @always_inline
     fn render_get_clip_rect(self, renderer: Ptr[_Renderer], rect: Ptr[Rect]):

@@ -7,7 +7,7 @@ from ._sdl import _SDL
 struct Mouse[lif: AnyLifetime[False].type]:
     var sdl: Reference[SDL, lif]
 
-    fn __init__(inout self, ref[lif]sdl: SDL):
+    fn __init__(inout self, ref [lif]sdl: SDL):
         self.sdl = sdl
 
     fn get_position(self) -> (Int, Int):

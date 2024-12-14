@@ -108,8 +108,7 @@ struct Renderer[lif: AnyLifetime[False].type]:
         self.sdl[]._sdl.set_render_draw_color(self._renderer_ptr, color.r, color.g, color.b, color.a)
 
     fn get_color(self) raises -> Color:
-        var color: Color
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(color))
+        var color = utils._uninit[Color]()
         self.sdl[]._sdl.get_render_draw_color(self._renderer_ptr, adr(color.r), adr(color.g), adr(color.b), adr(color.a))
         return color
 
@@ -120,14 +119,12 @@ struct Renderer[lif: AnyLifetime[False].type]:
         self.sdl[]._sdl.render_set_vsync(self._renderer_ptr, vsync)
 
     fn get_blendmode(self) raises -> BlendMode:
-        var blend_mode: BlendMode
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(blend_mode))
+        var blend_mode = utils._uninit[BlendMode]()
         self.sdl[]._sdl.get_render_draw_blend_mode(self._renderer_ptr, adr(blend_mode))
         return blend_mode
 
     fn get_viewport(self) -> Rect:
-        var rect: Rect
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(rect))
+        var rect = utils._uninit[Rect]()
         self.sdl[]._sdl.render_get_viewport(self._renderer_ptr, adr(rect))
         return rect
 
@@ -135,16 +132,13 @@ struct Renderer[lif: AnyLifetime[False].type]:
         return self.sdl[]._sdl.render_set_viewport(self._renderer_ptr, adr(rect))
 
     fn get_info(self) raises -> RendererInfo:
-        var info: RendererInfo
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(info))
+        var info = utils._uninit[RendererInfo]()
         self.sdl[]._sdl.get_renderer_info(self._renderer_ptr, adr(info))
         return info
 
     fn get_output_size(self) raises -> (Int, Int):
-        var w: IntC
-        var h: IntC
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(w))
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(h))
+        var w = utils._uninit[IntC]()
+        var h = utils._uninit[IntC]()
         self.sdl[]._sdl.get_renderer_output_size(self._renderer_ptr, adr(w), adr(h))
         return int(w), int(h)
 
@@ -175,7 +169,7 @@ struct Renderer[lif: AnyLifetime[False].type]:
         self.sdl[]._sdl.render_draw_lines_f(self._renderer_ptr, points.unsafe_ptr(), len(points))
 
     fn draw_circle[type: DType = DType.float32](self, center: DPoint[type], radius: Scalar) raises:
-        self.sdl[].gfx.circle_color(self._renderer_ptr, center.x.cast[DType.int16](), center.y.cast[DType.int16](), radius.cast[DType.int16](), self.get_color().as_uint32())
+        self.sdl[]._gfx().circle_color(self._renderer_ptr, center.x.cast[DType.int16](), center.y.cast[DType.int16](), radius.cast[DType.int16](), self.get_color().as_uint32())
 
     fn draw_rect[type: DType = DType.float32](self, rect: DRect[type]) raises:
         @parameter

@@ -1,12 +1,13 @@
 """Defines SDL_mix bindings and wrappers for use in Mojo."""
 
-from sys.ffi import DLHandle
+from sys import DLHandle, os_is_macos, os_is_linux
 from .._sdl import SDL_Fn
 from .sound import MixChunk, _MixChunk, MixMusic, _MixMusic
 
 
 struct _MIX:
-    var _initialized: Bool
+    """Raw bindings to sdl_mix."""
+
     var _handle: DLHandle
     var error: SDL_Error
 
@@ -19,13 +20,16 @@ struct _MIX:
     var _free_music: SDL_Fn["Mix_FreeMusic", fn (Ptr[_MixMusic]) -> NoneType]
     var _play_music: SDL_Fn["Mix_PlayMusic", fn (Ptr[_MixMusic], Int32) -> Int32]
 
-    fn __init__(inout self, none: NoneType):
-        self._initialized = False
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(self))
+    fn __init__(inout self, error: SDL_Error):
+        @parameter
+        if os_is_macos():
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_mixer.dylib")
+        elif os_is_linux():
+            self._handle = DLHandle(".magic/envs/default/lib/libSDL2_mixer.so")
+        else:
+            constrained[False, "OS is not supported"]()
+            self._handle = utils._uninit[DLHandle]()
 
-    fn __init__[init: Bool](inout self, error: SDL_Error):
-        self._initialized = True
-        self._handle = DLHandle(".magic/envs/default/lib/libSDL2_mixer.so")
         self.error = error
         self._open_audio = self._handle
         self._close_audio = self._handle
@@ -35,14 +39,6 @@ struct _MIX:
         self._load_mus = self._handle
         self._free_music = self._handle
         self._play_music = self._handle
-
-    fn __init__(inout self, error: SDL_Error, frequency: Int32 = 44100, format: UInt16 = sound.AUDIO_S16LSB, channels: Int32 = 2, chunksize: Int32 = 2048) raises:
-        self.__init__[False](error)
-        self.init(frequency, format, channels, chunksize)
-
-    fn __del__(owned self):
-        if self._initialized:
-            self.quit()
 
     @always_inline
     fn init(self, frequency: Int32, format: UInt16, channels: Int32, chunksize: Int32) raises:

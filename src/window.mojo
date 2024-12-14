@@ -21,12 +21,13 @@ fn windowpos_centered_display(x: Int32) -> Int32:
 
 struct Window[lif: AnyLifetime[False].type]:
     """A higher level wrapper around an SDL_Window."""
+
     var sdl: Reference[SDL, lif]
     var _window_ptr: Ptr[_Window]
 
     fn __init__(
         inout self,
-        ref[lif] sdl: SDL,
+        ref [lif]sdl: SDL,
         name: String,
         width: Int32,
         height: Int32,
@@ -71,7 +72,7 @@ struct Window[lif: AnyLifetime[False].type]:
 
         self._window_ptr = self.sdl[]._sdl.create_window(name.unsafe_cstr_ptr().bitcast[DType.uint8](), x, y, width, height, flags)
 
-    fn __init__(inout self, ref[lif]sdl: SDL, _window_ptr: Ptr[_Window] = Ptr[_Window]()):
+    fn __init__(inout self, ref [lif]sdl: SDL, _window_ptr: Ptr[_Window] = Ptr[_Window]()):
         self.sdl = sdl
         self._window_ptr = _window_ptr
 
@@ -95,12 +96,12 @@ struct Window[lif: AnyLifetime[False].type]:
 
     fn destroy_surface(inout self) raises:
         self.sdl[]._sdl.destroy_window_surface(self._window_ptr)
-        
 
 
 @register_passable("trivial")
 struct _Window:
     """The opaque type used to identify a window."""
+
     pass
 
 

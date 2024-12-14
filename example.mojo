@@ -13,7 +13,7 @@ def main():
     var clock = Clock(sdl, target_fps=60)
     var held_keys = SIMD[DType.bool, 512]()
 
-    var apple = Surface(sdl, sdl.img.load_image(('assets/apple.png').unsafe_cstr_ptr().bitcast[DType.uint8]()))
+    var apple = Surface(sdl, sdl._img().load_image(('assets/apple.png').unsafe_cstr_ptr().bitcast[DType.uint8]()))
     var rotated_apple = apple.rotozoomed(90, 1, True)
     var font = ttf.Font(sdl, "assets/Beef'd.ttf", 24)
     var hello = font.render_solid('Hello, World!', Color(255, 0, 255, 255))

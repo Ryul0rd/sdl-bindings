@@ -15,3 +15,8 @@ fn opt2ptr(optional: Optional) -> Ptr[optional.T]:
     else:
         return Ptr[optional.T]()
 
+
+@always_inline
+fn _uninit[T: AnyType]() -> T as value:
+    # Returns uninitialized data.
+    __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(value))
