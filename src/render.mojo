@@ -167,6 +167,14 @@ struct Renderer[lif: AnyLifetime[False].type]:
         self.sdl[]._sdl.get_renderer_output_size(self._renderer_ptr, adr(w), adr(h))
         return int(w), int(h)
 
+    fn get_texture_size(self, texture: Texture) raises -> (Int, Int):
+        var w: IntC
+        var h: IntC
+        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(w))
+        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(h))
+        self.sdl[]._sdl.query_texture(texture._texture_ptr, UnsafePointer[UInt32](), UnsafePointer[IntC](), adr(w), adr(h))
+        return int(w), int(h)
+
     fn draw_point[type: DType = DType.float32](self, x: Scalar[type], y: Scalar[type]) raises:
         @parameter
         if type.is_integral():
