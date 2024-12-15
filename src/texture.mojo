@@ -10,7 +10,14 @@ struct Texture:
     var _texture_ptr: Ptr[_Texture]
     var _rc: UnsafePointer[Int]
 
-    fn __init__(inout self, renderer: Renderer, format: UInt32, access: Int, w: Int, h: Int) raises:
+    fn __init__(
+        inout self,
+        renderer: Renderer,
+        format: UInt32,
+        access: Int,
+        w: Int,
+        h: Int,
+    ) raises:
         self.sdl = adr(renderer.sdl[])
         self._texture_ptr = self.sdl[]._sdl.create_texture(renderer._renderer_ptr, format, access, w, h)
         self._rc = UnsafePointer[Int].alloc(1)

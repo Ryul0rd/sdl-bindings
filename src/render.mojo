@@ -11,7 +11,12 @@ struct Renderer[lif: AnyLifetime[False].type]:
     var _renderer_ptr: Ptr[_Renderer]
     var window: Window[lif]
 
-    fn __init__(inout self, owned window: Window[lif], index: Int = -1, flags: UInt32 = 0) raises:
+    fn __init__(
+        inout self,
+        owned window: Window[lif],
+        index: Int = -1,
+        flags: UInt32 = 0,
+    ) raises:
         self.sdl = window.sdl
         self.window = window^
         self._renderer_ptr = self.sdl[]._sdl.create_renderer(self.window._window_ptr, index, flags)
@@ -35,19 +40,39 @@ struct Renderer[lif: AnyLifetime[False].type]:
     fn copy[type: DType = DType.int32](self, texture: Texture, src: Optional[Rect]) raises:
         @parameter
         if type.is_integral():
-            self.sdl[]._sdl.render_copy(self._renderer_ptr, texture._texture_ptr, opt2ptr(src), Ptr[Rect]())
+            self.sdl[]._sdl.render_copy(
+                self._renderer_ptr,
+                texture._texture_ptr,
+                opt2ptr(src),
+                Ptr[Rect](),
+            )
         elif type.is_floating_point():
-            self.sdl[]._sdl.render_copy_f(self._renderer_ptr, texture._texture_ptr, opt2ptr(src), Ptr[FRect]())
+            self.sdl[]._sdl.render_copy_f(
+                self._renderer_ptr,
+                texture._texture_ptr,
+                opt2ptr(src),
+                Ptr[FRect](),
+            )
 
     fn copy[type: DType = DType.int32](self, texture: Texture, src: Optional[Rect], dst: DRect[type]) raises:
         @parameter
         if type.is_integral():
             var _dst = dst.cast[DType.int32]()
-            self.sdl[]._sdl.render_copy(self._renderer_ptr, texture._texture_ptr, opt2ptr(src), adr(_dst))
+            self.sdl[]._sdl.render_copy(
+                self._renderer_ptr,
+                texture._texture_ptr,
+                opt2ptr(src),
+                adr(_dst),
+            )
             _ = _dst
         elif type.is_floating_point():
             var _dst = dst.cast[DType.float32]()
-            self.sdl[]._sdl.render_copy_f(self._renderer_ptr, texture._texture_ptr, opt2ptr(src), adr(_dst))
+            self.sdl[]._sdl.render_copy_f(
+                self._renderer_ptr,
+                texture._texture_ptr,
+                opt2ptr(src),
+                adr(_dst),
+            )
             _ = _dst
 
     fn copy(
@@ -147,7 +172,11 @@ struct Renderer[lif: AnyLifetime[False].type]:
         if type.is_integral():
             self.sdl[]._sdl.render_draw_point(self._renderer_ptr, x.cast[DType.int32](), y.cast[DType.int32]())
         elif type.is_floating_point():
-            self.sdl[]._sdl.render_draw_point_f(self._renderer_ptr, x.cast[DType.float32](), y.cast[DType.float32]())
+            self.sdl[]._sdl.render_draw_point_f(
+                self._renderer_ptr,
+                x.cast[DType.float32](),
+                y.cast[DType.float32](),
+            )
 
     fn draw_points(self, points: List[Point]) raises:
         self.sdl[]._sdl.render_draw_points(self._renderer_ptr, points.unsafe_ptr(), len(points))
@@ -155,12 +184,26 @@ struct Renderer[lif: AnyLifetime[False].type]:
     fn draw_points(self, points: List[FPoint]) raises:
         self.sdl[]._sdl.render_draw_points_f(self._renderer_ptr, points.unsafe_ptr(), len(points))
 
-    fn draw_line[type: DType = DType.float32](self, x1: Scalar[type], y1: Scalar[type], x2: Scalar[type], y2: Scalar[type]) raises:
+    fn draw_line[
+        type: DType = DType.float32
+    ](self, x1: Scalar[type], y1: Scalar[type], x2: Scalar[type], y2: Scalar[type],) raises:
         @parameter
         if type.is_integral():
-            self.sdl[]._sdl.render_draw_line(self._renderer_ptr, x1.cast[DType.int32](), y1.cast[DType.int32](), x2.cast[DType.int32](), y2.cast[DType.int32]())
+            self.sdl[]._sdl.render_draw_line(
+                self._renderer_ptr,
+                x1.cast[DType.int32](),
+                y1.cast[DType.int32](),
+                x2.cast[DType.int32](),
+                y2.cast[DType.int32](),
+            )
         elif type.is_floating_point():
-            self.sdl[]._sdl.render_draw_line_f(self._renderer_ptr, x1.cast[DType.float32](), y1.cast[DType.float32](), x2.cast[DType.float32](), y2.cast[DType.float32]())
+            self.sdl[]._sdl.render_draw_line_f(
+                self._renderer_ptr,
+                x1.cast[DType.float32](),
+                y1.cast[DType.float32](),
+                x2.cast[DType.float32](),
+                y2.cast[DType.float32](),
+            )
 
     fn draw_lines(self, points: List[Point]) raises:
         self.sdl[]._sdl.render_draw_lines(self._renderer_ptr, points.unsafe_ptr(), len(points))

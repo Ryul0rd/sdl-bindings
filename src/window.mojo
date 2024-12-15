@@ -70,7 +70,14 @@ struct Window[lif: AnyLifetime[False].type]:
         flags |= WindowFlags.INPUT_GRABBED * input_grabbed
         flags |= WindowFlags.ALLOW_HIGHDPI * allow_highdpi
 
-        self._window_ptr = self.sdl[]._sdl.create_window(name.unsafe_cstr_ptr().bitcast[DType.uint8](), x, y, width, height, flags)
+        self._window_ptr = self.sdl[]._sdl.create_window(
+            name.unsafe_cstr_ptr().bitcast[DType.uint8](),
+            x,
+            y,
+            width,
+            height,
+            flags,
+        )
 
     fn __init__(inout self, ref [lif]sdl: SDL, _window_ptr: Ptr[_Window] = Ptr[_Window]()):
         self.sdl = sdl

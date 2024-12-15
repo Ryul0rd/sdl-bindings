@@ -3,6 +3,8 @@
 from sys import DLHandle, os_is_macos, os_is_linux
 from .._sdl import SDL_Fn
 from .sound import MixChunk, _MixChunk, MixMusic, _MixMusic
+from sys.info import os_is_macos, os_is_linux
+from builtin.constrained import constrained
 
 
 struct _MIX:
@@ -41,8 +43,17 @@ struct _MIX:
         self._play_music = self._handle
 
     @always_inline
-    fn init(self, frequency: Int32, format: UInt16, channels: Int32, chunksize: Int32) raises:
-        self.error.if_code(self._open_audio.call(frequency, format, channels, chunksize), "Could not initialize sdl mix")
+    fn init(
+        self,
+        frequency: Int32,
+        format: UInt16,
+        channels: Int32,
+        chunksize: Int32,
+    ) raises:
+        self.error.if_code(
+            self._open_audio.call(frequency, format, channels, chunksize),
+            "Could not initialize sdl mix",
+        )
 
     @always_inline
     fn quit(self):
@@ -58,7 +69,10 @@ struct _MIX:
 
     @always_inline
     fn play_channel(self, channel: Int32, mix_chunk: Ptr[_MixChunk], loops: Int32) raises:
-        self.error.if_code(self._play_channel.call(channel, mix_chunk, loops), "Could not play channel")
+        self.error.if_code(
+            self._play_channel.call(channel, mix_chunk, loops),
+            "Could not play channel",
+        )
 
     @always_inline
     fn load_music(self, file: Ptr[CharC]) raises -> Ptr[_MixMusic]:
