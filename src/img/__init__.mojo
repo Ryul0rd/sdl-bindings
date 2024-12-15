@@ -1,6 +1,7 @@
 """Defines SDL_img bindings and wrappers for use in Mojo."""
 
-from sys.ffi import DLHandle
+from sys import DLHandle, os_is_macos, os_is_linux
+from collections import Optional
 from .._sdl import SDL_Fn
 from ..surface import _Surface
 from sys.info import os_is_macos, os_is_linux
@@ -8,7 +9,8 @@ from builtin.constrained import constrained
 
 
 struct _IMG:
-    var _initialized: Bool
+    """Raw bindings to sdl_img."""
+
     var _handle: DLHandle
     var error: SDL_Error
 
@@ -16,43 +18,20 @@ struct _IMG:
     var _img_quit: SDL_Fn["IMG_Quit", fn () -> NoneType]
     var _img_load: SDL_Fn["IMG_Load", fn (Ptr[CharC]) -> Ptr[_Surface]]
 
-    fn __init__(inout self, none: NoneType):
-        self._initialized = False
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(self))
-
-    fn __init__[init: Bool](inout self, error: SDL_Error):
-        self._initialized = True
-        constrained[os_is_linux() or os_is_macos(), "OS is not supported"]()
-
+    fn __init__(inout self, error: SDL_Error):
         @parameter
         if os_is_macos():
             self._handle = DLHandle(".magic/envs/default/lib/libSDL2_image.dylib")
-        else:
+        elif os_is_linux():
             self._handle = DLHandle(".magic/envs/default/lib/libSDL2_image.so")
+        else:
+            constrained[False, "OS is not supported"]()
+            self._handle = utils._uninit[DLHandle]()
+
         self.error = error
         self._img_init = self._handle
         self._img_quit = self._handle
         self._img_load = self._handle
-
-    fn __init__(
-        inout self,
-        error: SDL_Error,
-        jpeg: Bool = True,
-        png: Bool = True,
-        tif: Bool = False,
-        webp: Bool = False,
-    ) raises:
-        self.__init__[False](error)
-        var flags: Int32 = 0
-        flags |= 0x00000001 * jpeg
-        flags |= 0x00000002 * png
-        flags |= 0x00000004 * tif
-        flags |= 0x00000008 * webp
-        self.init(flags)
-
-    fn __del__(owned self):
-        if self._initialized:
-            self.quit()
 
     @always_inline
     fn init(self, flags: Int32) raises:

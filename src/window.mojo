@@ -79,11 +79,7 @@ struct Window[lif: AnyLifetime[False].type]:
             flags,
         )
 
-    fn __init__(
-        inout self,
-        ref [lif]sdl: SDL,
-        _window_ptr: Ptr[_Window] = Ptr[_Window](),
-    ):
+    fn __init__(inout self, ref [lif]sdl: SDL, _window_ptr: Ptr[_Window] = Ptr[_Window]()):
         self.sdl = sdl
         self._window_ptr = _window_ptr
 

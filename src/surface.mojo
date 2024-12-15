@@ -19,11 +19,7 @@ struct Surface[lif: AnyLifetime[False].type]:
         self = Self(sdl, width, height)
         self.fill(color)
 
-    fn __init__(
-        inout self,
-        ref [lif]sdl: SDL,
-        _surface_ptr: Ptr[_Surface] = Ptr[_Surface](),
-    ):
+    fn __init__(inout self, ref [lif]sdl: SDL, _surface_ptr: Ptr[_Surface] = Ptr[_Surface]()):
         self.sdl = sdl
         self._surface_ptr = _surface_ptr
 
@@ -59,11 +55,8 @@ struct Surface[lif: AnyLifetime[False].type]:
             opt2ptr(destination_rect),
         )
 
-    fn rotozoomed(self, angle: Float64, zoom: Float64, smooth: Bool = False) -> Surface[lif]:
-        return Surface(
-            self.sdl[],
-            self.sdl[].gfx.rotozoom_surface(self._surface_ptr, angle, zoom, smooth),
-        )
+    fn rotozoomed(self, angle: Float64, zoom: Float64, smooth: Bool = False) raises -> Surface[lif]:
+        return Surface(self.sdl[], self.sdl[]._gfx().rotozoom_surface(self._surface_ptr, angle, zoom, smooth))
 
     fn convert(inout self, format: Surface):
         self._surface_ptr = self.sdl[]._sdl._convert_surface.call(self._surface_ptr, format._surface_ptr[].format, 0)

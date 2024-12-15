@@ -53,10 +53,8 @@ struct Texture:
             self._rc[] -= 1
 
     fn lock(self, rect: Optional[Rect] = None) raises -> Pixels:
-        var pixels_ptr: Ptr[NoneType]
-        var pixels_pitch: IntC
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(pixels_ptr))
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(pixels_pitch))
+        var pixels_ptr = utils._uninit[Ptr[NoneType]]()
+        var pixels_pitch = utils._uninit[IntC]()
         self.sdl[]._sdl.lock_texture(self._texture_ptr, opt2ptr(rect), adr(pixels_ptr), adr(pixels_pitch))
         return Pixels(pixels_ptr, pixels_pitch)
 
@@ -64,12 +62,9 @@ struct Texture:
         self.sdl[]._sdl.unlock_texture(self._texture_ptr)
 
     fn get_color_mod(self) raises -> (UInt8, UInt8, UInt8):
-        var r: UInt8
-        var g: UInt8
-        var b: UInt8
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(r))
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(g))
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(b))
+        var r = utils._uninit[UInt8]()
+        var g = utils._uninit[UInt8]()
+        var b = utils._uninit[UInt8]()
         self.sdl[]._sdl.get_texture_color_mod(self._texture_ptr, adr(r), adr(g), adr(b))
         return r, g, b
 
@@ -77,8 +72,7 @@ struct Texture:
         self.sdl[]._sdl.set_texture_color_mod(self._texture_ptr, color.r, color.g, color.b)
 
     fn get_alpha_mod(self) raises -> UInt8:
-        var a: UInt8
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(a))
+        var a = utils._uninit[UInt8]()
         self.sdl[]._sdl.get_texture_alpha_mod(self._texture_ptr, adr(a))
         return a
 
@@ -86,8 +80,7 @@ struct Texture:
         self.sdl[]._sdl.set_texture_alpha_mod(self._texture_ptr, alpha)
 
     fn get_blend_mode(self) raises -> BlendMode:
-        var blend_mode: BlendMode
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(blend_mode))
+        var blend_mode = utils._uninit[BlendMode]()
         self.sdl[]._sdl.get_texture_blend_mode(self._texture_ptr, adr(blend_mode))
         return blend_mode
 
@@ -95,8 +88,7 @@ struct Texture:
         self.sdl[]._sdl.set_texture_blend_mode(self._texture_ptr, blend_mode)
 
     fn get_scale_mode(self) raises -> ScaleMode:
-        var scale_mode: ScaleMode
-        __mlir_op.`lit.ownership.mark_initialized`(__get_mvalue_as_litref(scale_mode))
+        var scale_mode = utils._uninit[ScaleMode]()
         self.sdl[]._sdl.get_texture_scale_mode(self._texture_ptr, adr(scale_mode))
         return scale_mode
 
