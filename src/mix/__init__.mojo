@@ -3,7 +3,6 @@
 from sys import DLHandle, os_is_macos, os_is_linux
 from .._sdl import SDL_Fn
 from .sound import MixChunk, _MixChunk, MixMusic, _MixMusic
-from sys.info import os_is_macos, os_is_linux
 from builtin.constrained import constrained
 
 

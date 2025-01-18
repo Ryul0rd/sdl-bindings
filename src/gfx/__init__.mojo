@@ -5,7 +5,6 @@ from collections import Optional
 from .._sdl import SDL_Fn
 from ..surface import _Surface
 from ..render import _Renderer
-from sys.info import os_is_macos, os_is_linux
 from builtin.constrained import constrained
 
 
