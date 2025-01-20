@@ -4,7 +4,6 @@ from sys import DLHandle, os_is_macos, os_is_linux
 from collections import Optional
 from .._sdl import SDL_Fn
 from ..surface import _Surface
-from sys.info import os_is_macos, os_is_linux
 from builtin.constrained import constrained
 
 

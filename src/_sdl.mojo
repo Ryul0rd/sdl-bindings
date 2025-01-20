@@ -12,7 +12,6 @@ from .gfx import _GFX
 from .img import _IMG
 from .mix import _MIX
 from .ttf import _TTF
-from sys.info import os_is_macos, os_is_linux
 from builtin.constrained import constrained
 
 
